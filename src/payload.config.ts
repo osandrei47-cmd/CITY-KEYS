@@ -4,6 +4,8 @@ import sharp from "sharp";
 import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { en } from "@payloadcms/translations/languages/en";
+import { ru } from "@payloadcms/translations/languages/ru";
 
 import { Users } from "./collections/Users";
 import { Media } from "./collections/Media";
@@ -33,6 +35,10 @@ export default buildConfig({
   },
   routes: {
     admin: "/staff-x7k2",
+  },
+  i18n: {
+    supportedLanguages: { ru, en },
+    fallbackLanguage: "ru",
   },
   collections: [Users, Media, Listings, Leads, Tasks, ResidentialComplexes],
   editor: lexicalEditor(),
