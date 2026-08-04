@@ -8,6 +8,14 @@ const BYPASS_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 дней
 // Пути, которые всегда доступны, даже когда включён режим реконструкции.
 const ALLOWED_PREFIXES = [MAINTENANCE_PATH, PREVIEW_PATH, "/staff-x7k2", "/api", "/feed"];
 
+// Статические файлы по расширению — регистронезависимо (в отличие от
+// matcher-регэкспа ниже, где нет флага /i). Важно: файлы в public/ иногда
+// имеют расширение в верхнем регистре (например, .JPG) — исходники с
+// камеры/телефона часто так называются, и без /i такие запросы уходили бы
+// в proxy() наравне с обычными страницами, включая внутренний self-fetch
+// Next.js для /_next/image.
+const STATIC_FILE_PATTERN = /\.(ico|png|jpe?g|gif|webp|svg|xml|txt|webmanifest)$/i;
+
 function isAllowedPath(pathname: string) {
   return ALLOWED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
@@ -16,6 +24,10 @@ function isAllowedPath(pathname: string) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (STATIC_FILE_PATTERN.test(pathname)) {
+    return NextResponse.next();
+  }
 
   // Секретный обход: ставим cookie на 30 дней и уводим на главную.
   if (pathname === PREVIEW_PATH) {
@@ -45,10 +57,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Пропускаем внутренние ассеты Next.js и любые статические файлы по
-  // расширению (изображения, favicon, XML-фиды и т.п.) — им незачем
-  // проходить через логику редиректа на /maintenance.
-  matcher: [
-    "/((?!_next/static|_next/image|.*\\.(?:ico|png|jpg|jpeg|gif|webp|svg|xml|txt|webmanifest)$).*)",
-  ],
+  // Внутренние ассеты Next.js исключаем на уровне matcher (это безопасно —
+  // регистр здесь всегда фиксированный). Статику по расширению — уже внутри
+  // proxy(), через STATIC_FILE_PATTERN с флагом /i.
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };
