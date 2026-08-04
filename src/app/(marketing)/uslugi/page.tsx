@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
-import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
+import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
+import { HouseArrowsIcon, HouseCalendarIcon, HouseGearIcon } from "@/components/ui/mesh-icons";
 import {
   IconScale,
   IconShieldCheck,
@@ -23,17 +24,20 @@ const propertyServices = [
   {
     title: "Продажа и покупка недвижимости",
     text: "Полное сопровождение — от подбора объекта или поиска покупателя до подписания договора.",
-    assetHint: "фото объекта — реальная недвижимость, не иконка",
+    icon: HouseArrowsIcon,
+    variant: 0,
   },
   {
     title: "Аренда жилой и коммерческой недвижимости",
     text: "Подбор арендатора или объекта, проверка условий, сопровождение сделки.",
-    assetHint: "фото объекта — реальная недвижимость, не иконка",
+    icon: HouseCalendarIcon,
+    variant: 1,
   },
   {
     title: "Управление недвижимостью",
     text: "Сдаю и обслуживаю жилую и коммерческую недвижимость от лица собственника — без его постоянного участия.",
-    assetHint: "фото объекта — реальная недвижимость, не иконка",
+    icon: HouseGearIcon,
+    variant: 2,
   },
 ];
 
@@ -118,8 +122,13 @@ export default function ServicesPage() {
         <Eyebrow>Сделки с недвижимостью</Eyebrow>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {propertyServices.map((s) => (
-            <div key={s.title} className="flex flex-col gap-3">
-              <PhotoPlaceholder className="aspect-[4/3] rounded-[4px]" assetHint={s.assetHint} />
+            <div key={s.title} className="group flex flex-col gap-3">
+              <MeshGradientCard
+                icon={s.icon}
+                variant={s.variant}
+                iconSize={40}
+                className="aspect-[4/3] rounded-[4px]"
+              />
               <h3 className="text-[15px] font-bold">{s.title}</h3>
               <p className="text-[13.5px] leading-relaxed text-ink-secondary">{s.text}</p>
             </div>

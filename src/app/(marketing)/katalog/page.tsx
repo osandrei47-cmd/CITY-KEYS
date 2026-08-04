@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Building2, Building, House, LandPlot } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { PageHero } from "@/components/ui/page-hero";
-import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
+import { MeshGradientCard, type MeshGradientIcon } from "@/components/ui/mesh-gradient-card";
+import { HouseTreeIcon, CraneIcon } from "@/components/ui/mesh-icons";
 import { DealToggle } from "@/components/ui/deal-toggle";
 import { ListingCard } from "@/components/ui/listing-card";
 import { getPayloadClient } from "@/lib/payload-client";
@@ -17,29 +19,34 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 const categories = [
-  { label: "Квартиры", slug: "kvartiry" },
-  { label: "Дома и коттеджи", slug: "doma" },
-  { label: "Дачи", slug: "dachi" },
-  { label: "Коммерческая недвижимость", slug: "commercial" },
-  { label: "Земельные участки", slug: "uchastki" },
+  { label: "Квартиры", slug: "kvartiry", icon: Building2, variant: 0 },
+  { label: "Дома и коттеджи", slug: "doma", icon: House, variant: 1 },
+  { label: "Дачи", slug: "dachi", icon: HouseTreeIcon, variant: 2 },
+  { label: "Коммерческая недвижимость", slug: "commercial", icon: Building, variant: 3 },
+  { label: "Земельные участки", slug: "uchastki", icon: LandPlot, variant: 0 },
 ] as const;
 
 function CategoryTile({
   label,
   href,
   isActive,
-  assetHint,
+  icon,
+  variant,
 }: {
   label: string;
   href: string;
   isActive?: boolean;
-  assetHint: string;
+  icon: MeshGradientIcon;
+  variant: number;
 }) {
   return (
     <Link href={href} className="group flex flex-col gap-3">
-      <div className={`overflow-hidden rounded-[4px] ${isActive ? "ring-2 ring-accent" : ""}`}>
-        <PhotoPlaceholder className="aspect-[4/3]" assetHint={assetHint} />
-      </div>
+      <MeshGradientCard
+        icon={icon}
+        variant={variant}
+        iconSize={36}
+        className={`aspect-[4/3] rounded-[4px] ${isActive ? "ring-2 ring-accent" : ""}`}
+      />
       <span
         className={`text-[15px] font-bold group-hover:text-accent ${isActive ? "text-accent" : ""}`}
       >
@@ -94,21 +101,19 @@ export default async function CatalogPage({
               label={c.label}
               href={katalogHref({ deal, category: c.slug })}
               isActive={activeCategory === c.slug}
-              assetHint={`превью категории «${c.label}» — до реальных фото объектов`}
+              icon={c.icon}
+              variant={c.variant}
             />
           ))}
-          <CategoryTile
-            label="Новостройки"
-            href="/novostroyki"
-            assetHint="превью раздела «Новостройки» — до реальных фото ЖК"
-          />
+          <CategoryTile label="Новостройки" href="/novostroyki" icon={CraneIcon} variant={4} />
           {categories.slice(4).map((c) => (
             <CategoryTile
               key={c.slug}
               label={c.label}
               href={katalogHref({ deal, category: c.slug })}
               isActive={activeCategory === c.slug}
-              assetHint={`превью категории «${c.label}» — до реальных фото объектов`}
+              icon={c.icon}
+              variant={c.variant}
             />
           ))}
         </div>

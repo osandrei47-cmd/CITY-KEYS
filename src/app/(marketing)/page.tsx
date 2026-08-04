@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { KeyRound, CalendarDays } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
@@ -7,14 +8,16 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Quote } from "@/components/ui/quote";
 import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
 import { BlogCard } from "@/components/ui/blog-card";
+import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
+import { HouseUpIcon, CraneIcon } from "@/components/ui/mesh-icons";
 import { blogPosts } from "@/lib/blog-posts";
 import { contacts } from "@/lib/nav";
 
 const directions = [
-  { label: "Купить", href: "/katalog" },
-  { label: "Продать", href: "/kontakty" },
-  { label: "Снять / Сдать", href: "/katalog?deal=rent" },
-  { label: "Новостройки", href: "/novostroyki" },
+  { label: "Купить", href: "/katalog", icon: KeyRound },
+  { label: "Продать", href: "/kontakty", icon: HouseUpIcon },
+  { label: "Снять / Сдать", href: "/katalog?deal=rent", icon: CalendarDays },
+  { label: "Новостройки", href: "/novostroyki", icon: CraneIcon },
 ];
 
 export default function HomePage() {
@@ -57,15 +60,17 @@ export default function HomePage() {
       {/* Блок 2. Направления */}
       <Section>
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[4px] bg-line md:grid-cols-4">
-          {directions.map((d) => (
+          {directions.map((d, i) => (
             <Link
               key={d.label}
               href={d.href}
-              className="group flex min-h-[120px] flex-col justify-end bg-surface p-5 transition-colors hover:bg-surface-2"
+              className="group relative min-h-[160px] overflow-hidden"
             >
-              <span className="text-[16px] font-bold group-hover:text-accent">
-                {d.label}
-              </span>
+              <MeshGradientCard icon={d.icon} variant={i} align="start" className="h-full">
+                <span className="mt-auto text-[16px] font-bold text-white group-hover:text-accent">
+                  {d.label}
+                </span>
+              </MeshGradientCard>
             </Link>
           ))}
         </div>

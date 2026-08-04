@@ -18,6 +18,7 @@
     "@payloadcms/richtext-lexical": "^3.86.0",
     "@payloadcms/translations": "^3.86.0",
     "graphql": "^16.14.2",
+    "lucide-react": "^1.28.0",
     "next": "16.2.11",
     "nodemailer": "^9.0.3",
     "payload": "^3.86.0",

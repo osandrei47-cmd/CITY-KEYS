@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { PhotoPlaceholder } from "./photo-placeholder";
+import { MeshGradientCard } from "./mesh-gradient-card";
+import { getBlogCategoryIcon } from "@/lib/blog-categories";
 
 export function BlogCard({
   slug,
@@ -14,9 +15,16 @@ export function BlogCard({
   excerpt: string;
   readingTime?: string;
 }) {
+  const { icon, variant } = getBlogCategoryIcon(category);
+
   return (
     <Link href={`/blog/${slug}`} className="group flex flex-col gap-3">
-      <PhotoPlaceholder className="aspect-[4/3] rounded-[4px]" assetHint={`обложка поста «${title}»`} />
+      <MeshGradientCard
+        icon={icon}
+        variant={variant}
+        iconSize={40}
+        className="aspect-[4/3] rounded-[4px]"
+      />
       <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink-secondary">
         {category}
         {readingTime ? ` · ${readingTime}` : ""}
