@@ -27,6 +27,7 @@ import { DealStageCell as DealStageCell_a1640f1520fd7ce00dece2d9e2b33cea } from 
 import { TaskDueDateCell as TaskDueDateCell_ee06fa1a2ac6da43b879c9faf24bf10a } from '@/components/admin/TaskDueDateCell'
 import { TaskDoneCell as TaskDoneCell_eafcef2af4c858decafd92361d0d6291 } from '@/components/admin/TaskDoneCell'
 import { KanbanNavLink as KanbanNavLink_059414ba1e303dff73d2e8ef5ae8160d } from '@/components/admin/KanbanNavLink'
+import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { KanbanView as KanbanView_035d1a3a9e0640cd29f3f1da2e837d33 } from '@/components/admin/KanbanView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -61,6 +62,7 @@ export const importMap = {
   "@/components/admin/TaskDueDateCell#TaskDueDateCell": TaskDueDateCell_ee06fa1a2ac6da43b879c9faf24bf10a,
   "@/components/admin/TaskDoneCell#TaskDoneCell": TaskDoneCell_eafcef2af4c858decafd92361d0d6291,
   "@/components/admin/KanbanNavLink#KanbanNavLink": KanbanNavLink_059414ba1e303dff73d2e8ef5ae8160d,
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/components/admin/KanbanView#KanbanView": KanbanView_035d1a3a9e0640cd29f3f1da2e837d33,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

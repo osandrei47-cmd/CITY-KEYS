@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import sharp from "sharp";
 import { buildConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { s3Storage } from "@payloadcms/storage-s3";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { en } from "@payloadcms/translations/languages/en";
 import { ru } from "@payloadcms/translations/languages/ru";
@@ -43,6 +44,28 @@ export default buildConfig({
   collections: [Users, Media, Listings, Leads, Tasks, ResidentialComplexes],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
+  plugins: [
+    // Файлы медиа хранятся в Timeweb S3 (Object Storage), а не на диске
+    // контейнера — тот пересоздаётся при каждом деплое и не даёт прав на
+    // запись. disableLocalStorage выставляется плагином автоматически.
+    s3Storage({
+      collections: {
+        media: true,
+      },
+      bucket: process.env.S3_BUCKET || "",
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+        },
+        region: process.env.S3_REGION || "ru-1",
+        endpoint: process.env.S3_ENDPOINT || "",
+        // Timeweb S3 (и большинство S3-совместимых хранилищ, кроме AWS)
+        // требует path-style URL — бакет в пути, а не в поддомене.
+        forcePathStyle: true,
+      },
+    }),
+  ],
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
