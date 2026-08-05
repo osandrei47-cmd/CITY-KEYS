@@ -49,6 +49,7 @@ const banks: Partner[] = [
   { name: "Совкомбанк", src: "/images/banks/logo-sovkombank.png" },
   { name: "Россельхозбанк", src: "/images/banks/Логотип_Россельхозбанк.svg.png" },
   { name: "ДОМ.РФ", src: "/images/banks/Domrf-Bank-Logo-Vector.svg-.png" },
+  { name: "Абсолют Банк", src: "/images/banks/absolut-bank.jpg" },
 ];
 
 const applicantDocuments = [
