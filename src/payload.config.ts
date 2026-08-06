@@ -63,6 +63,12 @@ export default buildConfig({
         // Timeweb S3 (и большинство S3-совместимых хранилищ, кроме AWS)
         // требует path-style URL — бакет в пути, а не в поддомене.
         forcePathStyle: true,
+        // AWS SDK v3 с версии 3.729 по умолчанию довешивает к каждому
+        // PutObject чек-сумму (x-amz-checksum-crc32) — S3-совместимые
+        // хранилища вне AWS часто такой заголовок не поддерживают и рвут
+        // загрузку. Возвращаем поведение SDK к "как было до 3.729".
+        requestChecksumCalculation: "WHEN_REQUIRED",
+        responseChecksumValidation: "WHEN_REQUIRED",
       },
     }),
   ],
