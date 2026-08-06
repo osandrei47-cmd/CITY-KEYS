@@ -14,13 +14,41 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 // не узнаёт — "Failed to find Server Action ... older or newer deployment".
 // Приводим BUILD_ID к commit SHA — он одинаков для всех реплик одного и того
 // же коммита независимо от того, сколько раз каждая из них пересобиралась.
+//
+// На практике `git rev-parse HEAD` на сборке Timeweb падает — судя по всему,
+// buildpack собирает из архива исходников без .git (см. лог первого же
+// деплоя: BUILD_ID пришёл как unix-время сборки, а не хэш коммита — раньше
+// эта ветка ничего не логировала и падение прошло незамеченным). Сначала
+// пробуем переменные окружения, которые под похожим именем сами
+// прокидывают некоторые CI/PaaS — если у Timeweb найдётся своя (нужно
+// свериться в их доках/поддержке), просто добавить её имя в список ниже.
+const COMMIT_SHA_ENV_CANDIDATES = [
+  "GIT_COMMIT_SHA",
+  "GIT_COMMIT",
+  "SOURCE_COMMIT",
+  "SOURCE_VERSION",
+  "COMMIT_SHA",
+  "CI_COMMIT_SHA",
+];
+
 function resolveBuildId(): string {
+  for (const name of COMMIT_SHA_ENV_CANDIDATES) {
+    const value = process.env[name];
+    if (value) return value;
+  }
+
   try {
     return execSync("git rev-parse HEAD").toString().trim();
-  } catch {
-    // Сборка без .git (например, из tarball) — такого быть не должно при
-    // обычном git-деплое, но лучше отдать хоть что-то стабильное в рамках
-    // одного process, чем каждый раз новый случайный ID.
+  } catch (error) {
+    // Раньше эта ветка молча отдавала Date.now() без единого следа в логах
+    // сборки — из-за этого падение git rev-parse осталось незамеченным на
+    // протяжении нескольких деплоев. Больше так не делаем: если долетели
+    // сюда, значит ни одна из переменных выше не задана И git недоступен —
+    // BUILD_ID будет случайным (время сборки), а не привязанным к коммиту,
+    // и это нужно видеть в логе сборки, а не только в рантайме потом.
+    console.warn(
+      `[build] generateBuildId: не удалось получить commit SHA — ни одна из переменных (${COMMIT_SHA_ENV_CANDIDATES.join(", ")}) не задана, и "git rev-parse HEAD" завершился ошибкой (${error instanceof Error ? error.message : String(error)}). BUILD_ID будет временной меткой сборки.`,
+    );
     return String(Date.now());
   }
 }
