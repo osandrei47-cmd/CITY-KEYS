@@ -194,6 +194,19 @@ export const Listings: CollectionConfig = {
     },
 
     // ---------- Контент ----------
+    // ВНИМАНИЕ: photos + droneVideo + leads (join ниже) — три relationship-
+    // образных поля на одном коллекшене. Payload заполняет их параллельно
+    // через Promise.all в afterRead (node_modules/payload/dist/fields/hooks/
+    // afterRead/index.js), но все они используют один и тот же transaction-
+    // scoped клиент Postgres (@payloadcms/drizzle/transactions/beginTransaction.js)
+    // — один pg-клиент не может выполнять два запроса одновременно. Иногда
+    // это роняет транзакцию запроса ("current transaction is aborted..."),
+    // из-за чего drawer "Выбрать из существующих" у Фотографий может не
+    // открыться с первой попытки — обычно помогает просто открыть его ещё
+    // раз. Это подтверждённый открытый баг в самом Payload (не в нашем
+    // конфиге) — https://github.com/payloadcms/payload/issues/16333, наш
+    // конкретный триггер (join + upload на одном коллекшене) там ещё не
+    // описан. Фикса на нашей стороне нет — ждём апстрим.
     {
       name: "description",
       label: "Описание",
