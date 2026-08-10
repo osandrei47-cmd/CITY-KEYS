@@ -5,6 +5,7 @@ export const LEAD_SOURCES = [
   { value: "ipoteka-calculator", label: "Ипотечный калькулятор" },
   { value: "ipoteka-quiz", label: "Квиз «Какую ставку одобрят»" },
   { value: "katalog-obyekt", label: "Страница объекта в каталоге" },
+  { value: "proekt-ust-luga-izhs", label: "Лендинг «Усть-Луга ИЖС»" },
   { value: "other", label: "Другое" },
 ] as const;
 

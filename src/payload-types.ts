@@ -267,7 +267,7 @@ export interface Lead {
   name: string;
   phone: string;
   email?: string | null;
-  source: 'kontakty-form' | 'ipoteka-calculator' | 'ipoteka-quiz' | 'katalog-obyekt' | 'other';
+  source: 'kontakty-form' | 'ipoteka-calculator' | 'ipoteka-quiz' | 'katalog-obyekt' | 'proekt-ust-luga-izhs' | 'other';
   message?: string | null;
   notes?:
     | {
