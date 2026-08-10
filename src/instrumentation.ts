@@ -1,45 +1,3 @@
-// Печатает в обычные логи приложения отпечаток server-reference-manifest.json
-// (id-ы Server Actions + ключ шифрования) при каждом старте процесса. Идея:
-// сверять этот отпечаток в логах ДО и ПОСЛЕ очередного SIGTERM-рестарта.
-// Если он совпадает — рестарт переиспользует один и тот же артефакт сборки
-// (баг тогда не в пересборке). Если отпечаток каждый раз новый — это прямое
-// доказательство, что Timeweb на каждом рестарте гоняет `next build` заново
-// (см. .next/server/server-reference-manifest.json — путь и формат файла
-// подсмотрены в исходниках самого Next.js, node_modules/next/dist/server/mcp/
-// tools/get-server-action-by-id.js, который читает этот же файл для похожей
-// отладочной задачи). Сырой ключ шифрования в лог не пишем — только его
-// sha256-отпечаток, этого достаточно для сравнения "тот же/другой".
-async function logServerActionsManifestFingerprint() {
-  const { promises: fs } = await import("fs");
-  const path = await import("path");
-  const { createHash } = await import("crypto");
-
-  const manifestPath = path.join(process.cwd(), ".next", "server", "server-reference-manifest.json");
-  const buildIdPath = path.join(process.cwd(), ".next", "BUILD_ID");
-
-  try {
-    const [manifestRaw, buildId] = await Promise.all([
-      fs.readFile(manifestPath, "utf-8"),
-      fs.readFile(buildIdPath, "utf-8").then((s) => s.trim()),
-    ]);
-    const manifest = JSON.parse(manifestRaw) as {
-      node?: Record<string, unknown>;
-      encryptionKey?: string;
-    };
-    const actionIds = Object.keys(manifest.node ?? {}).sort();
-    const manifestHash = createHash("sha256").update(manifestRaw).digest("hex").slice(0, 16);
-    const keyHash = manifest.encryptionKey
-      ? createHash("sha256").update(manifest.encryptionKey).digest("hex").slice(0, 16)
-      : "отсутствует";
-
-    console.log(
-      `[startup] buildId=${buildId} serverActionsManifestHash=${manifestHash} encryptionKeyHash=${keyHash} actionsCount=${actionIds.length} sampleActionId=${actionIds[0] ?? "нет"}`,
-    );
-  } catch (error) {
-    console.warn("[startup] не удалось прочитать server-reference-manifest.json для отпечатка", error);
-  }
-}
-
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     // Без этой переменной Next.js на каждой пересборке генерирует новый
@@ -54,6 +12,9 @@ export async function register() {
         "[startup] NEXT_SERVER_ACTIONS_ENCRYPTION_KEY не задан — ключ шифрования Server Actions будет случайным на каждой пересборке, что ломает уже открытые вкладки админки после рестарта. См. .env.example.",
       );
     }
+    const { logServerActionsManifestFingerprint } = await import(
+      "@/lib/log-server-actions-fingerprint"
+    );
     await logServerActionsManifestFingerprint();
 
     // node-postgres (использует @payloadcms/db-postgres) кидает фоновую
