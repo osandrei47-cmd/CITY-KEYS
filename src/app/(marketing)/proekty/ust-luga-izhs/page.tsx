@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Route, Layers, Zap, Rocket, Factory, TrendingUp } from "lucide-react";
 import { Section } from "@/components/layout/section";
 import { Container } from "@/components/layout/container";
 import { PageHero } from "@/components/ui/page-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { StatRow } from "@/components/ui/stat";
-import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
 import { InvestorForm } from "@/components/ust-luga-izhs/investor-form";
 import { contacts } from "@/lib/nav";
 
@@ -110,7 +110,8 @@ export default function UstLugaIzhsPage() {
         eyebrow="Инвестиционный проект"
         title="Загородный модульный кластер ИЖС"
         subtitle="Масштаб: 500 соток в частной собственности. Быстрый запуск первой очереди за 90 дней с выходом на операционную выручку и прозрачным масштабированием. Формат — закрытый загородный посёлок / арендный комплекс бизнес-класса."
-        photoAssetHint="Аэросъёмка участка 500 соток, порт Усть-Луга"
+        photoSrc="/api/media/file/2026-08-07_16-33-31.png"
+        photoAlt="Аэрообзор участка и порта Усть-Луга с обозначением ключевых объектов"
         ctas={[{ label: "Скачать презентацию", href: "#download" }]}
       />
       <Container className="pb-16 pt-8">
@@ -142,10 +143,15 @@ export default function UstLugaIzhsPage() {
               ))}
             </ul>
           </div>
-          <PhotoPlaceholder
-            assetHint="Схема межевания массива, 500 соток"
-            className="aspect-[4/3] rounded-[4px] md:order-2"
-          />
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[4px] md:order-2">
+            <Image
+              src="/api/media/file/2.jpg"
+              alt="Схема межевания массива, 500 соток — 21 участок от 12,5 до 25 соток"
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </Section>
 
