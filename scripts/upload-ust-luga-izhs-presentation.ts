@@ -16,11 +16,6 @@ process.loadEnvFile(".env.local");
 
 import { readFile } from "fs/promises";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import {
-  getUstLugaIzhsS3Client,
-  UST_LUGA_IZHS_PDF_KEY,
-  UST_LUGA_IZHS_S3_BUCKET,
-} from "@/lib/ust-luga-izhs-s3";
 
 const filePath = process.argv[2];
 
@@ -30,6 +25,14 @@ if (!filePath) {
 }
 
 async function main() {
+  // Динамический import: src/lib/ust-luga-izhs-s3.ts читает process.env.S3_*
+  // на уровне модуля — статический import той же строкой ниже из-за
+  // ESM-hoisting выполнился бы ДО process.loadEnvFile() выше по файлу,
+  // и переменные ещё не были бы загружены (ровно так уже один раз упало).
+  const { getUstLugaIzhsS3Client, UST_LUGA_IZHS_PDF_KEY, UST_LUGA_IZHS_S3_BUCKET } = await import(
+    "@/lib/ust-luga-izhs-s3"
+  );
+
   const body = await readFile(filePath);
   const client = getUstLugaIzhsS3Client();
 
