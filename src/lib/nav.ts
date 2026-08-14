@@ -23,4 +23,6 @@ export const contacts = {
   email: "info@city-keys.ru",
   telegram: "https://t.me/citykeys1",
   max: "https://max.ru/id470705914908_biz",
+  whatsapp: "https://wa.me/79531474885",
+  vk: "https://vk.ru/citykeys47",
 };
