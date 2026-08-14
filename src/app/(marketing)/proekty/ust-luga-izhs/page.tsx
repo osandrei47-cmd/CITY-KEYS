@@ -124,6 +124,30 @@ export default function UstLugaIzhsPage() {
         />
       </Container>
 
+      {/* Видео-презентация — сразу после хедлайна, до деталей по земле и
+          инфраструктуре: короткий эмоциональный обзор перед цифрами. Видео
+          не зарегистрировано в коллекции Media (как и PDF), src — прямая
+          ссылка на S3, poster — уже загруженное фото id=9 (спутниковая
+          карта участка), так как ffmpeg для извлечения кадра из видео на
+          этой машине не установлен. */}
+      <Section>
+        <Eyebrow>Видео</Eyebrow>
+        <h2 className="mt-3 text-[20px] font-extrabold">Кратко о проекте на видео</h2>
+        <div className="mt-6 overflow-hidden rounded-[4px] border-2 border-accent bg-surface">
+          <video
+            controls
+            preload="none"
+            poster="/api/media/file/1.jpg"
+            className="aspect-video w-full"
+          >
+            <source
+              src="https://s3.twcstorage.ru/city-keys-media/videos/ust-luga-izhs/ust-luga-izhs-presentation.mp4"
+              type="video/mp4"
+            />
+          </video>
+        </div>
+      </Section>
+
       {/* Блок 2. Земля и юридический статус */}
       <Section>
         <div className="grid gap-10 md:grid-cols-2 md:items-center">
