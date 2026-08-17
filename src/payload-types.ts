@@ -73,6 +73,7 @@ export interface Config {
     leads: Lead;
     tasks: Task;
     'residential-complexes': ResidentialComplex;
+    projects: Project;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -93,6 +94,7 @@ export interface Config {
     leads: LeadsSelect<false> | LeadsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
     'residential-complexes': ResidentialComplexesSelect<false> | ResidentialComplexesSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -334,6 +336,34 @@ export interface ResidentialComplex {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  /**
+   * Латиницей, без пробелов — например «ust-luga-izhs». Страница проекта должна существовать по адресу /proekty/slug (создаётся разработчиком отдельно от карточки)
+   */
+  slug: string;
+  coverPhoto: number | Media;
+  /**
+   * 1-2 предложения для карточки в каталоге /proekty
+   */
+  shortDescription: string;
+  status: 'sale' | 'development' | 'completed';
+  /**
+   * Необязательно — короткий текст рядом со статусом на карточке, например «Доходность 18–22%»
+   */
+  metric?: string | null;
+  /**
+   * Выключите, если карточка проекта ещё не готова к публикации
+   */
+  isPublished?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -379,6 +409,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'residential-complexes';
         value: number | ResidentialComplex;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -552,6 +586,21 @@ export interface ResidentialComplexesSelect<T extends boolean = true> {
   slug?: T;
   coverPhoto?: T;
   shortDescription?: T;
+  isPublished?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  coverPhoto?: T;
+  shortDescription?: T;
+  status?: T;
+  metric?: T;
   isPublished?: T;
   updatedAt?: T;
   createdAt?: T;
