@@ -4,9 +4,27 @@ import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Quote } from "@/components/ui/quote";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "Отзывы — CITY KEYS";
+const DESCRIPTION =
+  "Рейтинг 5,0 на Авито, 4,5 на Яндексе и 5,0 на Домклик — отзывы клиентов о работе с CITY KEYS в Кингисеппе.";
 
 export const metadata: Metadata = {
-  title: "Отзывы — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/otzyvy",
+    image: {
+      url: "/images/andrey-otzyvy-hero-banner.jpg",
+      width: 3729,
+      height: 1678,
+      alt: "Андрей Осипов улыбается на фоне жилых домов",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const reviews = [

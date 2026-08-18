@@ -24,6 +24,11 @@ import {
   type Listing,
 } from "@/lib/listing-types";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
+import { buildListingProductJsonLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/feed/constants";
+import { absoluteUrl } from "@/lib/feed/helpers";
 
 export const revalidate = 60;
 
@@ -54,9 +59,29 @@ export async function generateMetadata({
   if (!listing) {
     return { title: "Объект — CITY KEYS" };
   }
+
+  const title = buildListingMetaTitle(listing);
+  const description = buildListingMetaDescription(listing);
+  const firstPhoto = (listing.photos ?? []).find(isMediaDoc);
+  const image: OgImage = firstPhoto?.url
+    ? {
+        url: firstPhoto.url,
+        width: firstPhoto.width ?? undefined,
+        height: firstPhoto.height ?? undefined,
+        alt: firstPhoto.alt || title,
+      }
+    : DEFAULT_OG_IMAGE;
+
   return {
-    title: buildListingMetaTitle(listing),
-    description: buildListingMetaDescription(listing),
+    title,
+    description,
+    openGraph: buildOpenGraph({
+      title,
+      description,
+      path: `/katalog/obyekt/${listing.id}`,
+      image,
+    }),
+    twitter: buildTwitter({ title, description, image }),
   };
 }
 
@@ -70,6 +95,14 @@ export default async function ListingPage({
   if (!listing) notFound();
 
   const photos = (listing.photos ?? []).filter(isMediaDoc);
+
+  const listingUrl = `${SITE_URL}/katalog/obyekt/${listing.id}`;
+  const productJsonLd = buildListingProductJsonLd({
+    listing,
+    url: listingUrl,
+    description: buildListingMetaDescription(listing),
+    imageUrls: photos.map((photo) => absoluteUrl(photo.url ?? "")).filter(Boolean),
+  });
 
   const params_: Array<[string, string]> = [
     ["Тип недвижимости", propertyTypeLabels[listing.propertyType]],
@@ -92,6 +125,7 @@ export default async function ListingPage({
 
   return (
     <Section className="pb-24 pt-28 md:pt-36">
+      <JsonLd data={productJsonLd} />
       <Container>
         <div className="mx-auto flex max-w-[880px] flex-col gap-10">
           <div className="flex flex-col gap-3">

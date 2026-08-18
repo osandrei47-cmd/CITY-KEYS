@@ -3,6 +3,8 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { SITE_URL } from "@/lib/feed/constants";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -10,10 +12,22 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+const TITLE = "CITY KEYS — агентство недвижимости в Кингисеппе";
+const DESCRIPTION =
+  "25 лет в недвижимости. Одну сделку веду от первого звонка до ключей лично — сам, а не через сменяющихся менеджеров.";
+
 export const metadata: Metadata = {
-  title: "CITY KEYS — агентство недвижимости в Кингисеппе",
-  description:
-    "25 лет в недвижимости. Одну сделку веду от первого звонка до ключей лично — сам, а не через сменяющихся менеджеров.",
+  // Без этого relative-пути в openGraph/twitter images (везде на сайте)
+  // не могут собраться в абсолютный URL — Next.js упадёт с ошибкой сборки.
+  // См. docs/seo-audit-2026-08-18.md, п.9.
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  // Общий запасной OG/Twitter — применяется только к страницам, которые
+  // не задают свой openGraph/twitter явно (см. buildOpenGraph в lib/seo.ts
+  // про то, почему это не наследуется автоматически по отдельным полям).
+  openGraph: buildOpenGraph({ title: TITLE, description: DESCRIPTION, path: "/" }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },

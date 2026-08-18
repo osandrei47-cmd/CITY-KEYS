@@ -8,11 +8,29 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { StatRow } from "@/components/ui/stat";
 import { InvestorForm } from "@/components/ust-luga-izhs/investor-form";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildUstLugaIzhsJsonLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/seo/json-ld";
+
+const TITLE = "Инвестиции в загородный модульный кластер ИЖС — Усть-Луга | CITY KEYS";
+const DESCRIPTION =
+  "500 соток в частной собственности у порта Усть-Луга: 90 дней до первой выручки, доходность 20–22% годовых. Готовая юридическая основа и инфраструктура.";
 
 export const metadata: Metadata = {
-  title: "Инвестиции в загородный модульный кластер ИЖС — Усть-Луга | CITY KEYS",
-  description:
-    "500 соток в частной собственности у порта Усть-Луга: 90 дней до первой выручки, доходность 20–22% годовых. Готовая юридическая основа и инфраструктура.",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/proekty/ust-luga-izhs",
+    image: {
+      url: "/api/media/file/2026-08-07_16-33-31.png",
+      width: 1136,
+      height: 766,
+      alt: "Аэрообзор участка и порта Усть-Луга с обозначением ключевых объектов",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const landPoints = [
@@ -105,6 +123,8 @@ const fullPotentialStats = [
 export default function UstLugaIzhsPage() {
   return (
     <>
+      <JsonLd data={buildUstLugaIzhsJsonLd()} />
+
       {/* Блок 1. Hero */}
       <PageHero
         eyebrow="Инвестиционный проект"

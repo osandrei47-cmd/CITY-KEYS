@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { KeyRound, CalendarDays } from "lucide-react";
@@ -12,6 +13,30 @@ import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
 import { HouseUpIcon, CraneIcon } from "@/components/ui/mesh-icons";
 import { blogPosts } from "@/lib/blog-posts";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE } from "@/lib/seo";
+import { buildRealEstateAgentJsonLd } from "@/lib/structured-data";
+import { JsonLd } from "@/components/seo/json-ld";
+
+const TITLE = "CITY KEYS — агентство недвижимости в Кингисеппе";
+const DESCRIPTION =
+  "25 лет в недвижимости. Одну сделку веду от первого звонка до ключей лично — сам, а не через сменяющихся менеджеров.";
+
+// Раньше главная не задавала собственных метаданных и полностью зависела
+// от layout.tsx — рабочий, но хрупкий вариант (см.
+// docs/seo-audit-2026-08-18.md, п.11). Теперь у неё есть свой блок — тот
+// же текст, что и в layout.tsx (общий запасной для страниц без своего
+// openGraph), но явно и с собственным hero-фото для превью в мессенджерах.
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/",
+    image: { ...DEFAULT_OG_IMAGE, alt: "Силуэт на фоне башни — CITY KEYS" },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+};
 
 const directions = [
   { label: "Купить", href: "/katalog", icon: KeyRound },
@@ -23,6 +48,8 @@ const directions = [
 export default function HomePage() {
   return (
     <>
+      <JsonLd data={buildRealEstateAgentJsonLd()} />
+
       {/* Блок 1. Hero */}
       <section className="relative flex min-h-[85vh] items-end overflow-hidden">
         <Image

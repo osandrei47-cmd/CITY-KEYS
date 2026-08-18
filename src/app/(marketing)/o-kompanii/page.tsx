@@ -4,9 +4,27 @@ import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "О компании — CITY KEYS";
+const DESCRIPTION =
+  "Здесь нет менеджеров, которые передают сделку друг другу. Один человек ведёт её от первого звонка до ключей и отвечает за результат лично.";
 
 export const metadata: Metadata = {
-  title: "О компании — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/o-kompanii",
+    image: {
+      url: "/images/andrey-office-suit.JPG",
+      width: 4176,
+      height: 2784,
+      alt: "Андрей Осипов в кабинете, за ноутбуком",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const practicalPoints = [

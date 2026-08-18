@@ -8,13 +8,30 @@ import { YandexMap } from "@/components/ui/yandex-map";
 import { contacts } from "@/lib/nav";
 import { getPayloadClient } from "@/lib/payload-client";
 import { formatPrice, type Listing } from "@/lib/listing-types";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildRealEstateAgentJsonLd, OFFICE_COORDINATES } from "@/lib/structured-data";
+import { JsonLd } from "@/components/seo/json-ld";
+
+const TITLE = "Контакты — CITY KEYS";
+const DESCRIPTION =
+  "Пишите или звоните напрямую — отвечаю сам, обычно в течение дня. Офис CITY KEYS в Кингисеппе, ул. Октябрьская, д.18а/14.";
 
 export const metadata: Metadata = {
-  title: "Контакты — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/kontakty",
+    image: {
+      url: "/images/andrey-otzyvy-hero-banner.jpg",
+      width: 3729,
+      height: 1678,
+      alt: "Андрей Осипов улыбается на фоне жилых домов",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
-
-// Координаты офиса — БЦ «Волна», Кингисепп, ул. Октябрьская, д.18а/14
-const OFFICE_COORDS: [number, number] = [59.374028, 28.611297];
 
 async function getLinkedListing(listingParam: string | undefined) {
   const id = Number(listingParam);
@@ -39,6 +56,8 @@ export default async function ContactsPage({
 
   return (
     <>
+      <JsonLd data={buildRealEstateAgentJsonLd()} />
+
       <PageBannerHero
         eyebrow="Контакты"
         title="Отвечаю лично — без колл-центра"
@@ -92,12 +111,12 @@ export default async function ContactsPage({
         <h2 className="mt-2 text-[20px] font-extrabold">{contacts.address}</h2>
         <div className="mt-6">
           <YandexMap
-            center={OFFICE_COORDS}
+            center={OFFICE_COORDINATES}
             zoom={16}
             markers={[
               {
-                lat: OFFICE_COORDS[0],
-                lng: OFFICE_COORDS[1],
+                lat: OFFICE_COORDINATES[0],
+                lng: OFFICE_COORDINATES[1],
                 hint: "CITY KEYS",
                 balloonContent: contacts.address,
               },

@@ -15,9 +15,27 @@ import {
   IconRefresh,
 } from "@/components/ui/icons";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "Ипотека — CITY KEYS";
+const DESCRIPTION =
+  "Работаю больше чем с 10 банками и не отправляю заявку в первый попавшийся — сравниваю условия и нахожу ставку, которая реально выгодна вам.";
 
 export const metadata: Metadata = {
-  title: "Ипотека — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/ipoteka",
+    image: {
+      url: "/images/andrey-ipoteka-hero-bw.jpg",
+      width: 6000,
+      height: 4000,
+      alt: "Андрей Осипов, чёрно-белый портрет в полный рост",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const featuredPrograms = [

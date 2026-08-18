@@ -13,6 +13,7 @@ import {
   type Project,
 } from "@/lib/project-types";
 import { hasHandBuiltProjectPage } from "@/lib/project-pages";
+import { buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
 
 // Next.js отдаёт приоритет статическому маршруту (proekty/ust-luga-izhs)
 // перед этим динамическим — сюда попадают только те slug'и, для которых
@@ -41,12 +42,28 @@ export async function generateMetadata({
     return { title: "Проект не найден — CITY KEYS" };
   }
 
+  const title = buildProjectMetaTitle(project);
+  const description = buildProjectMetaDescription(project);
+  const cover = isMediaDoc(project.coverPhoto) ? project.coverPhoto : null;
+  const image: OgImage = cover?.url
+    ? {
+        url: cover.url,
+        width: cover.width ?? undefined,
+        height: cover.height ?? undefined,
+        alt: cover.alt || title,
+      }
+    : DEFAULT_OG_IMAGE;
+
   return {
-    title: buildProjectMetaTitle(project),
-    description: buildProjectMetaDescription(project),
+    title,
+    description,
+    openGraph: buildOpenGraph({ title, description, path: `/proekty/${project.slug}`, image }),
+    twitter: buildTwitter({ title, description, image }),
     // Пока у проекта нет своей вручную свёрстанной страницы, здесь только
     // временная заглушка — не даём поисковику индексировать тонкий контент,
     // который скоро заменится (см. docs/seo-audit-2026-08-18.md, п.1 и п.6).
+    // OG/Twitter теги при этом всё равно нужны — мессенджеры их читают
+    // независимо от robots.
     robots: { index: false, follow: true },
   };
 }

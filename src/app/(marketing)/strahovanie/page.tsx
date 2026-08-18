@@ -7,9 +7,27 @@ import { Button } from "@/components/ui/button";
 import { PartnerLogoGrid, type Partner } from "@/components/ui/partner-logo-grid";
 import { IconShieldCheck, IconHouse, IconSteeringWheel, IconCarShield } from "@/components/ui/icons";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "Страхование — CITY KEYS";
+const DESCRIPTION =
+  "Работаю с 10 ведущими страховыми компаниями и подбираю полис так, чтобы вы не переплачивали — часто со скидкой от действующих на рынке цен.";
 
 export const metadata: Metadata = {
-  title: "Страхование — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/strahovanie",
+    image: {
+      url: "/images/andrey-office-suit.JPG",
+      width: 4176,
+      height: 2784,
+      alt: "Рабочий момент — оформление документов за ноутбуком",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const featuredInsurance = [

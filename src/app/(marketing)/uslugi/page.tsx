@@ -15,9 +15,27 @@ import {
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "Услуги — CITY KEYS";
+const DESCRIPTION =
+  "От юридической проверки объекта до страховки и безопасных расчётов — беру на себя всё, что обычно приходится собирать самому по разным конторам.";
 
 export const metadata: Metadata = {
-  title: "Услуги — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/uslugi",
+    image: {
+      url: "/images/andrey-desk-laptop.JPG",
+      width: 4176,
+      height: 2784,
+      alt: "Андрей за рабочим столом с ноутбуком",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const propertyServices = [

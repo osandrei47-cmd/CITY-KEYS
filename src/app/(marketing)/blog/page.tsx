@@ -3,9 +3,26 @@ import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { BlogCard } from "@/components/ui/blog-card";
 import { blogPosts } from "@/lib/blog-posts";
+import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+const TITLE = "Блог — CITY KEYS";
+const DESCRIPTION = "Кейсы сделок, разбор рисков и практические гиды от CITY KEYS — простым языком.";
 
 export const metadata: Metadata = {
-  title: "Блог — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: "/blog",
+    image: {
+      url: "/images/andrey-desk-laptop.JPG",
+      width: 4176,
+      height: 2784,
+      alt: "Андрей за рабочим столом с ноутбуком",
+    },
+  }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
 };
 
 const categories = [
