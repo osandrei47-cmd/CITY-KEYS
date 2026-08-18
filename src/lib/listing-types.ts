@@ -162,7 +162,14 @@ export function buildListingMetaTitle(listing: Listing): string {
 export function buildListingMetaDescription(listing: Listing): string {
   const plainText = richTextToPlainText(listing.description);
   if (plainText) {
-    return truncateAtWord(plainText, META_DESCRIPTION_MAX_LENGTH);
+    // richTextToPlainText разделяет абзацы через "\n\n" — уместно для
+    // текстового описания на странице, но в <meta name="description">
+    // и og:description переносы строк выглядят как артефакт (лишний
+    // пробел/перенос посреди фразы в выдаче). Схлопываем в пробелы
+    // только здесь, не трогая саму richTextToPlainText — её результат
+    // с переносами нужен фидам (Авито/ЦИАН/Яндекс, см. lib/feed/*).
+    const singleLine = plainText.replace(/\s+/g, " ").trim();
+    return truncateAtWord(singleLine, META_DESCRIPTION_MAX_LENGTH);
   }
 
   const propertyType = propertyTypeLabels[listing.propertyType];
