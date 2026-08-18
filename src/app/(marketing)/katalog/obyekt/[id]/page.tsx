@@ -10,6 +10,8 @@ import { getPayloadClient } from "@/lib/payload-client";
 import {
   balconyLabels,
   bathroomLabels,
+  buildListingMetaDescription,
+  buildListingMetaTitle,
   buildingTypeLabels,
   dealTypeLabels,
   formatPrice,
@@ -49,7 +51,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const listing = await getListing(id);
-  return { title: listing ? `${listing.title} — CITY KEYS` : "Объект — CITY KEYS" };
+  if (!listing) {
+    return { title: "Объект — CITY KEYS" };
+  }
+  return {
+    title: buildListingMetaTitle(listing),
+    description: buildListingMetaDescription(listing),
+  };
 }
 
 export default async function ListingPage({

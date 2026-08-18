@@ -2,6 +2,7 @@
 // Сами типы (Listing, Media) — автогенерируемые Payload'ом в src/payload-types.ts,
 // обновляются командой `npm run generate:types` при изменении схемы коллекций.
 
+import type { SerializedEditorState, SerializedLexicalNode } from "lexical";
 import type { Listing, Media } from "@/payload-types";
 
 export type { Listing, Media };
@@ -100,4 +101,78 @@ export function listingToMapMarker(
     hint: listing.title,
     balloonContent: `${listing.title} — ${formatPrice(listing.price)}`,
   };
+}
+
+// Простой обход Lexical JSON в plain text — параграфы разделяются пустой
+// строкой, как в подтверждённом рабочем фиде (см. src/lib/feed/*, где эта
+// функция раньше жила отдельно — перенесена сюда, чтобы meta-описание
+// объекта (buildListingMetaDescription ниже) могло её переиспользовать без
+// цикличного импорта feed/helpers.ts <-> listing-types.ts).
+export function richTextToPlainText(
+  data: Listing["description"] | null | undefined,
+): string {
+  if (!data) return "";
+  const root = (data as SerializedEditorState).root;
+  if (!root?.children) return "";
+
+  function collectText(node: SerializedLexicalNode & { [k: string]: unknown }): string {
+    const text = (node as unknown as { text?: unknown }).text;
+    if (typeof text === "string") return text;
+    const children = (node as unknown as { children?: SerializedLexicalNode[] }).children;
+    if (Array.isArray(children)) {
+      return children.map((child) => collectText(child as never)).join("");
+    }
+    return "";
+  }
+
+  return root.children
+    .map((node) => collectText(node as never))
+    .filter((text) => text.trim().length > 0)
+    .join("\n\n")
+    .trim();
+}
+
+const META_DESCRIPTION_MAX_LENGTH = 160;
+
+// Обрезает по границе слова и добавляет многоточие — чтобы описание в
+// выдаче поисковика не обрывалось посреди слова.
+function truncateAtWord(text: string, maxLength: number): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  const cut = trimmed.slice(0, maxLength);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+}
+
+// Уникальный <title> для страницы объекта — на основе его собственных
+// данных, а не общего заголовка сайта (см. docs/seo-audit-2026-08-18.md, п.3).
+export function buildListingMetaTitle(listing: Listing): string {
+  const propertyType = propertyTypeLabels[listing.propertyType];
+  const place = listing.locality || listing.address;
+  return place
+    ? `${listing.title} — ${propertyType} в ${place}, CITY KEYS`
+    : `${listing.title} — ${propertyType}, CITY KEYS`;
+}
+
+// Уникальное meta-описание объекта: если у объекта заполнено текстовое
+// описание — берём первые ~160 символов из него; если нет — собираем
+// короткое описание из ключевых полей (тип, комнаты, площадь, адрес, цена),
+// чтобы описание никогда не было пустым и никогда не дублировалось между
+// объектами (см. docs/seo-audit-2026-08-18.md, п.3).
+export function buildListingMetaDescription(listing: Listing): string {
+  const plainText = richTextToPlainText(listing.description);
+  if (plainText) {
+    return truncateAtWord(plainText, META_DESCRIPTION_MAX_LENGTH);
+  }
+
+  const propertyType = propertyTypeLabels[listing.propertyType];
+  const rooms = listing.rooms ? roomsLabels[listing.rooms] : null;
+  const area = listing.areaTotal ? `${listing.areaTotal} м²` : null;
+  const place = listing.locality || listing.address;
+  const details = [propertyType, rooms, area].filter(Boolean).join(", ");
+
+  const fallback = `${details}${place ? ` в ${place}` : ""}. Цена ${formatPrice(
+    listing.price,
+  )}. Агентство недвижимости CITY KEYS, Кингисепп.`;
+  return truncateAtWord(fallback, META_DESCRIPTION_MAX_LENGTH);
 }
