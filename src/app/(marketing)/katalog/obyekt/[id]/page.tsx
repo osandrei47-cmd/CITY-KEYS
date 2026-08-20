@@ -24,7 +24,7 @@ import {
   type Listing,
 } from "@/lib/listing-types";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
 import { buildListingProductJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/feed/constants";
@@ -82,6 +82,7 @@ export async function generateMetadata({
       image,
     }),
     twitter: buildTwitter({ title, description, image }),
+    alternates: buildCanonical(`/katalog/obyekt/${listing.id}`),
   };
 }
 

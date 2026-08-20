@@ -4,7 +4,7 @@ import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 
 const TITLE = "О компании — CITY KEYS";
 const DESCRIPTION =
@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/o-kompanii"),
 };
 
 const practicalPoints = [

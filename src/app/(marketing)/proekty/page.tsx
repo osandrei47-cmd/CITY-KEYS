@@ -3,7 +3,7 @@ import { Section } from "@/components/layout/section";
 import { PageHero } from "@/components/ui/page-hero";
 import { ProjectCard } from "@/components/ui/project-card";
 import { getPayloadClient } from "@/lib/payload-client";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import type { Project } from "@/payload-types";
 
 const TITLE = "Проекты — CITY KEYS";
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   openGraph: buildOpenGraph({ title: TITLE, description: DESCRIPTION, path: "/proekty" }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/proekty"),
 };
 
 export const dynamic = "force-dynamic";

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 
 const TITLE = "Услуги — CITY KEYS";
 const DESCRIPTION =
@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/uslugi"),
 };
 
 const propertyServices = [

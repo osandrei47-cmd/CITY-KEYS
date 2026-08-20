@@ -8,7 +8,7 @@ import { YandexMap } from "@/components/ui/yandex-map";
 import { contacts } from "@/lib/nav";
 import { getPayloadClient } from "@/lib/payload-client";
 import { formatPrice, type Listing } from "@/lib/listing-types";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import { buildRealEstateAgentJsonLd, OFFICE_COORDINATES } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/kontakty"),
 };
 
 async function getLinkedListing(listingParam: string | undefined) {

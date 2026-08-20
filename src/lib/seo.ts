@@ -43,6 +43,15 @@ export function buildOpenGraph({
   };
 }
 
+// Self-referencing canonical — на каждой странице сайта ровно один способ
+// на неё сослаться, без ?query-хвостов и параметров сортировки/фильтра
+// (см. docs/seo-audit-2026-08-18.md, п.7). `path` резолвится в абсолютный
+// URL через metadataBase (как и openGraph.url) — тут можно передавать
+// относительный путь.
+export function buildCanonical(path: string) {
+  return { canonical: path };
+}
+
 export function buildTwitter({
   title,
   description,

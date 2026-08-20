@@ -13,7 +13,7 @@ import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
 import { HouseUpIcon, CraneIcon } from "@/components/ui/mesh-icons";
 import { blogPosts } from "@/lib/blog-posts";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { buildRealEstateAgentJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     image: { ...DEFAULT_OG_IMAGE, alt: "Силуэт на фоне башни — CITY KEYS" },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/"),
 };
 
 const directions = [

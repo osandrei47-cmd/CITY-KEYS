@@ -15,7 +15,7 @@ import {
   IconRefresh,
 } from "@/components/ui/icons";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 
 const TITLE = "Ипотека — CITY KEYS";
 const DESCRIPTION =
@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/ipoteka"),
 };
 
 const featuredPrograms = [

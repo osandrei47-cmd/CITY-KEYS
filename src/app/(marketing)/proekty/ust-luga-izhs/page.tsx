@@ -8,11 +8,14 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { StatRow } from "@/components/ui/stat";
 import { InvestorForm } from "@/components/ust-luga-izhs/investor-form";
 import { contacts } from "@/lib/nav";
-import { buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import { buildUstLugaIzhsJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 
-const TITLE = "Инвестиции в загородный модульный кластер ИЖС — Усть-Луга | CITY KEYS";
+// Было 69 символов ("Инвестиции в загородный модульный кластер ИЖС —
+// Усть-Луга | CITY KEYS") — Google обрезал бы в выдаче (см.
+// docs/seo-audit-2026-08-18.md, п.8). Тот же смысл, короче формулировка.
+const TITLE = "Инвестиции в модульный кластер ИЖС в Усть-Луге | CITY KEYS";
 const DESCRIPTION =
   "500 соток в частной собственности у порта Усть-Луга: 90 дней до первой выручки, доходность 20–22% годовых. Готовая юридическая основа и инфраструктура.";
 
@@ -31,6 +34,7 @@ export const metadata: Metadata = {
     },
   }),
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/proekty/ust-luga-izhs"),
 };
 
 const landPoints = [
