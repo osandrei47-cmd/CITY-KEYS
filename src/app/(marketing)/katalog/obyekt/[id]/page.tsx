@@ -130,7 +130,7 @@ export default async function ListingPage({
       <JsonLd data={productJsonLd} />
       <Container>
         <div className="mx-auto flex max-w-[880px] flex-col gap-10">
-          <div className="flex flex-col gap-3">
+          <div className="listing-header flex flex-col gap-3">
             {listing.mortgageAvailable ? (
               <span className="w-fit rounded-[3px] bg-accent px-2 py-1 text-[11px] font-bold text-accent-ink">
                 Можно в ипотеку
@@ -149,7 +149,7 @@ export default async function ListingPage({
           </div>
 
           {photos.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="listing-photos grid gap-3 md:grid-cols-2">
               {photos.map((photo) => (
                 <div key={photo.id} className="relative aspect-[4/3] overflow-hidden rounded-[4px]">
                   <Image
@@ -163,10 +163,13 @@ export default async function ListingPage({
               ))}
             </div>
           ) : (
-            <PhotoPlaceholder className="aspect-[16/9] rounded-[4px]" assetHint={`фото объекта «${listing.title}»`} />
+            <PhotoPlaceholder
+              className="listing-photo-fallback aspect-[16/9] rounded-[4px]"
+              assetHint={`фото объекта «${listing.title}»`}
+            />
           )}
 
-          <div className="grid gap-x-8 gap-y-3 rounded-[4px] border border-line bg-surface p-6 sm:grid-cols-2">
+          <div className="listing-params grid gap-x-8 gap-y-3 rounded-[4px] border border-line bg-surface p-6 sm:grid-cols-2">
             {params_.map(([label, value]) => (
               <div key={label} className="flex justify-between gap-4 text-[13.5px]">
                 <span className="text-ink-secondary">{label}</span>
@@ -176,7 +179,7 @@ export default async function ListingPage({
           </div>
 
           {listing.description ? (
-            <div className="prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
+            <div className="listing-description prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
               <RichText data={listing.description} />
             </div>
           ) : null}

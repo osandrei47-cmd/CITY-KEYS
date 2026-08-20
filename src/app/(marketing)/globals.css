@@ -63,6 +63,46 @@ body {
   body {
     background: #ffffff;
   }
+
+  /* Фото объекта раньше делилось между страницами при печати — на
+     мобильной раскладке (md:grid-cols-2 не применяется) все фотографии
+     шли одна под одной на всю ширину, и первая же обычно не помещалась
+     на лист целиком. Для печати показываем только обложку — одну,
+     крупно, гарантированно в границах одной страницы А4 — остальные
+     фото не несут дополнительной информации для распечатанного листа
+     (характеристики и описание важнее). */
+  .listing-photos {
+    display: block !important;
+  }
+
+  .listing-photos > *:not(:first-child) {
+    display: none !important;
+  }
+
+  .listing-photos > *:first-child {
+    aspect-ratio: auto;
+    height: 140mm;
+    max-height: 140mm;
+  }
+
+  /* break-inside — современный синоним page-break-inside, оставляем оба
+     для старых движков печати; break-after: page гарантирует, что текстовый
+     блок (характеристики/описание/контакты) начинается с чистого листа, а
+     не наползает на фото снизу. */
+  .listing-header,
+  .listing-photos,
+  .listing-photo-fallback,
+  .listing-params,
+  .listing-description,
+  .print-only {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .listing-photos {
+    break-after: page;
+    page-break-after: always;
+  }
 }
 
 .print-only {
