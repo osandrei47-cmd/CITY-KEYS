@@ -5,7 +5,7 @@
 // необходимости перейти на нативную схему.
 
 import { getPayloadClient } from "@/lib/payload-client";
-import { activeListingsWhere } from "@/lib/feed/helpers";
+import { platformListingsWhere } from "@/lib/feed/helpers";
 import { buildYandexFeedXml } from "@/lib/feed/yandex";
 import type { Listing } from "@/lib/listing-types";
 
@@ -15,7 +15,7 @@ export async function GET() {
   const payload = await getPayloadClient();
   const { docs } = await payload.find({
     collection: "listings",
-    where: activeListingsWhere,
+    where: platformListingsWhere("publishDomclick"),
     depth: 1,
     limit: 1000,
   });

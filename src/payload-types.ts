@@ -252,6 +252,10 @@ export interface Listing {
    */
   lat?: number | null;
   lng?: number | null;
+  publishAvito?: boolean | null;
+  publishCian?: boolean | null;
+  publishDomclick?: boolean | null;
+  publishYandex?: boolean | null;
   gasSupply?: boolean | null;
   waterSupply?: boolean | null;
   sewerageSupply?: boolean | null;
@@ -530,6 +534,10 @@ export interface ListingsSelect<T extends boolean = true> {
   mortgageAvailable?: T;
   lat?: T;
   lng?: T;
+  publishAvito?: T;
+  publishCian?: T;
+  publishDomclick?: T;
+  publishYandex?: T;
   gasSupply?: T;
   waterSupply?: T;
   sewerageSupply?: T;

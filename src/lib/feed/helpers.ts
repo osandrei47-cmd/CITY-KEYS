@@ -8,6 +8,18 @@ export const activeListingsWhere: Where = {
   status: { equals: "for-sale" },
 };
 
+type PublishFlagField = "publishAvito" | "publishCian" | "publishDomclick" | "publishYandex";
+
+// Каждый фид (Авито/ЦИАН/Домклик/Яндекс) теперь должен ещё и уважать
+// собственный чекбокс объекта "Публиковать на ..." — по умолчанию везде
+// true, чтобы для уже существующих объектов ничего не изменилось само
+// собой (см. src/collections/Listings.ts).
+export function platformListingsWhere(field: PublishFlagField): Where {
+  return {
+    and: [activeListingsWhere, { [field]: { equals: true } }],
+  };
+}
+
 export function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")

@@ -1,5 +1,5 @@
 import { getPayloadClient } from "@/lib/payload-client";
-import { activeListingsWhere } from "@/lib/feed/helpers";
+import { platformListingsWhere } from "@/lib/feed/helpers";
 import { buildAvitoFeedXml } from "@/lib/feed/avito";
 import type { Listing } from "@/lib/listing-types";
 
@@ -9,7 +9,7 @@ export async function GET() {
   const payload = await getPayloadClient();
   const { docs } = await payload.find({
     collection: "listings",
-    where: activeListingsWhere,
+    where: platformListingsWhere("publishAvito"),
     depth: 1,
     limit: 1000,
   });

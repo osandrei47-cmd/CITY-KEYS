@@ -312,6 +312,39 @@ export const Listings: CollectionConfig = {
             },
           ],
         },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "publishAvito",
+              label: "Публиковать на Авито",
+              type: "checkbox",
+              defaultValue: true,
+              admin: { width: "25%" },
+            },
+            {
+              name: "publishCian",
+              label: "Публиковать на ЦИАН",
+              type: "checkbox",
+              defaultValue: true,
+              admin: { width: "25%" },
+            },
+            {
+              name: "publishDomclick",
+              label: "Публиковать на Домклик",
+              type: "checkbox",
+              defaultValue: true,
+              admin: { width: "25%" },
+            },
+            {
+              name: "publishYandex",
+              label: "Публиковать на Яндекс.Недвижимость",
+              type: "checkbox",
+              defaultValue: true,
+              admin: { width: "25%" },
+            },
+          ],
+        },
       ],
     },
 
