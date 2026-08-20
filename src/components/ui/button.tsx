@@ -17,29 +17,51 @@ export function Button({
   href,
   variant = "primary",
   className = "",
+  ariaLabel,
 }: {
   children: ReactNode;
   href?: string;
   variant?: ButtonVariant;
   className?: string;
+  ariaLabel?: string;
 }) {
   const classes = `${base} ${variants[variant]} ${className}`;
 
   if (href) {
     const isExternal = href.startsWith("http");
+    // tel:/mailto: — не новая вкладка (это не "уход с сайта" в смысле
+    // target="_blank"), но и не внутренний маршрут для next/link.
+    const isSpecialScheme = href.startsWith("tel:") || href.startsWith("mailto:");
     if (isExternal) {
       return (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={classes}>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={classes}
+          aria-label={ariaLabel}
+        >
+          {children}
+        </a>
+      );
+    }
+    if (isSpecialScheme) {
+      return (
+        <a href={href} className={classes} aria-label={ariaLabel}>
           {children}
         </a>
       );
     }
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={classes} aria-label={ariaLabel}>
         {children}
       </Link>
     );
   }
 
-  return <button className={classes}>{children}</button>;
+  return (
+    <button className={classes} aria-label={ariaLabel}>
+      {children}
+    </button>
+  );
 }

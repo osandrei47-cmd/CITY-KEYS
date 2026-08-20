@@ -210,6 +210,13 @@ export default async function ListingPage({
 
           <div className="no-print flex flex-wrap gap-3">
             <Button href={`/kontakty?listing=${listing.id}`}>Оставить заявку</Button>
+            <Button
+              href={`tel:${contacts.phone.replace(/[^\d+]/g, "")}`}
+              variant="ghost"
+              ariaLabel="Позвонить"
+            >
+              Позвонить
+            </Button>
             <Button href={contacts.telegram} variant="ghost">
               Telegram
             </Button>
