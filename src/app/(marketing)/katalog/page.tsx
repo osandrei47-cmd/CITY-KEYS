@@ -65,6 +65,44 @@ function CategoryTile({
   );
 }
 
+// Компактный переключатель категорий — заменяет собой большую плиточную
+// сетку, когда конкретная категория уже выбрана (см. CatalogPage ниже).
+// Без него, спрятав сетку, пользователь мог бы сменить категорию только
+// через "Сбросить фильтр" + повторный клик по плитке — двумя экранами
+// выше на мобильном. Здесь та же ссылка на /novostroyki, что и в общей
+// сетке (это отдельный раздел сайта, а не propertyType-фильтр каталога).
+function CategoryChips({
+  deal,
+  activeCategory,
+}: {
+  deal: DealFilter;
+  activeCategory?: (typeof categories)[number]["slug"];
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {categories.map((c) => (
+        <Link
+          key={c.slug}
+          href={katalogHref({ deal, category: c.slug })}
+          className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
+            activeCategory === c.slug
+              ? "border-accent bg-accent text-accent-ink"
+              : "border-line text-ink-secondary hover:border-ink/30 hover:text-ink"
+          }`}
+        >
+          {c.label}
+        </Link>
+      ))}
+      <Link
+        href="/novostroyki"
+        className="rounded-full border border-line px-3.5 py-1.5 text-[12.5px] font-semibold text-ink-secondary transition-colors hover:border-ink/30 hover:text-ink"
+      >
+        Новостройки
+      </Link>
+    </div>
+  );
+}
+
 export default async function CatalogPage({
   searchParams,
 }: {
@@ -96,57 +134,83 @@ export default async function CatalogPage({
 
   return (
     <>
-      <PageHero eyebrow="Каталог" title="Подберём объект под вашу задачу" />
-
-      <Section className="pt-0">
-        <DealToggle deal={deal} category={activeCategory} />
-      </Section>
-
-      <Section>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {categories.slice(0, 4).map((c) => (
-            <CategoryTile
-              key={c.slug}
-              label={c.label}
-              href={katalogHref({ deal, category: c.slug })}
-              isActive={activeCategory === c.slug}
-              icon={c.icon}
-              variant={c.variant}
-            />
-          ))}
-          <CategoryTile label="Новостройки" href="/novostroyki" icon={CraneIcon} variant={4} />
-          {categories.slice(4).map((c) => (
-            <CategoryTile
-              key={c.slug}
-              label={c.label}
-              href={katalogHref({ deal, category: c.slug })}
-              isActive={activeCategory === c.slug}
-              icon={c.icon}
-              variant={c.variant}
-            />
-          ))}
-        </div>
-      </Section>
-
-      <Section>
-        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
-          <div className="flex flex-wrap items-baseline gap-3">
-            <h2 className="text-[22px] font-extrabold">
-              {activeCategory ? propertyTypeLabels[activeCategory] : "Актуальные объекты"}
-            </h2>
-            {activeCategory ? (
-              <Link
-                href={katalogHref({ deal })}
-                className="text-[12.5px] text-ink-secondary underline hover:text-ink"
-              >
-                Сбросить фильтр
-              </Link>
-            ) : null}
+      {activeCategory ? (
+        // Категория уже выбрана — общий хиро и большая сетка категорий
+        // здесь только мешают: пользователь целенаправленно кликнул по
+        // конкретной категории, а видит прежде всего общую "шапку"
+        // каталога, и нужные объекты оказываются только после прокрутки
+        // (см. задачу). Вместо этого — компактный заголовок с названием
+        // категории, счётчиком и ссылкой назад на весь каталог, плюс
+        // узкая строка чипов для быстрого переключения между категориями
+        // (без неё пришлось бы сначала жать "Сбросить фильтр", прокручивать
+        // наверх и только там менять категорию). Результаты этой категории
+        // видны сразу, без скролла — независимо от того, сколько объектов
+        // в ней сейчас заполнено.
+        <Section className="pb-0 pt-28 md:pt-36" border={false}>
+          <div className="flex flex-col gap-5">
+            <Link
+              href={katalogHref({ deal })}
+              className="w-fit text-[12.5px] text-ink-secondary underline hover:text-ink"
+            >
+              ← Весь каталог
+            </Link>
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              <h1 className="text-[28px] font-extrabold md:text-[34px]">
+                {propertyTypeLabels[activeCategory]}
+              </h1>
+              <span className="text-[13px] text-ink-secondary">
+                {listings.length ? pluralizeObjects(listings.length) : null}
+              </span>
+            </div>
+            <DealToggle deal={deal} category={activeCategory} />
+            <CategoryChips deal={deal} activeCategory={activeCategory} />
           </div>
-          <span className="text-[13px] text-ink-secondary">
-            {listings.length ? pluralizeObjects(listings.length) : null}
-          </span>
-        </div>
+        </Section>
+      ) : (
+        <>
+          <PageHero eyebrow="Каталог" title="Подберём объект под вашу задачу" />
+
+          <Section className="pt-0">
+            <DealToggle deal={deal} category={activeCategory} />
+          </Section>
+
+          <Section>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {categories.slice(0, 4).map((c) => (
+                <CategoryTile
+                  key={c.slug}
+                  label={c.label}
+                  href={katalogHref({ deal, category: c.slug })}
+                  isActive={activeCategory === c.slug}
+                  icon={c.icon}
+                  variant={c.variant}
+                />
+              ))}
+              <CategoryTile label="Новостройки" href="/novostroyki" icon={CraneIcon} variant={4} />
+              {categories.slice(4).map((c) => (
+                <CategoryTile
+                  key={c.slug}
+                  label={c.label}
+                  href={katalogHref({ deal, category: c.slug })}
+                  isActive={activeCategory === c.slug}
+                  icon={c.icon}
+                  variant={c.variant}
+                />
+              ))}
+            </div>
+          </Section>
+        </>
+      )}
+
+      <Section className={activeCategory ? "pt-8" : undefined}>
+        {!activeCategory ? (
+          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
+            <h2 className="text-[22px] font-extrabold">Актуальные объекты</h2>
+            <span className="text-[13px] text-ink-secondary">
+              {listings.length ? pluralizeObjects(listings.length) : null}
+            </span>
+          </div>
+        ) : null}
 
         {listings.length ? (
           <div className="grid gap-8 md:grid-cols-3">
