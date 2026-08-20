@@ -19,8 +19,10 @@ import {
   isMediaDoc,
   propertyTypeLabels,
   renovationLabels,
+  richTextToPlainText,
   roomsLabels,
   statusLabels,
+  truncateAtWord,
   viewLabels,
   type Listing,
 } from "@/lib/listing-types";
@@ -32,6 +34,12 @@ import { SITE_URL } from "@/lib/feed/constants";
 import { absoluteUrl } from "@/lib/feed/helpers";
 
 export const revalidate = 60;
+
+// 2-3 предложения вместо полного текста — чтобы вместе с ПОЛНЫМ блоком
+// характеристик, фото и контактами печатная версия объекта помещалась на
+// один лист А4 (см. .listing-description-print в globals.css — полное
+// описание на печати скрыто, показывается только этот укороченный вариант).
+const PRINT_DESCRIPTION_MAX_LENGTH = 380;
 
 async function getListing(id: string) {
   const payload = await getPayloadClient();
@@ -113,6 +121,7 @@ export default async function ListingPage({
     listing.areaTotal ? ["Площадь общая", `${listing.areaTotal} м²`] : null,
     listing.areaLiving ? ["Площадь жилая", `${listing.areaLiving} м²`] : null,
     listing.areaKitchen ? ["Площадь кухни", `${listing.areaKitchen} м²`] : null,
+    listing.areaLot ? ["Площадь участка", `${listing.areaLot} соток`] : null,
     listing.floor && listing.totalFloors
       ? ["Этаж", `${listing.floor} из ${listing.totalFloors}`]
       : null,
@@ -125,11 +134,16 @@ export default async function ListingPage({
     ["Статус", statusLabels[listing.status]],
   ].filter((v): v is [string, string] => v !== null);
 
+  const printDescription = truncateAtWord(
+    richTextToPlainText(listing.description).replace(/\s+/g, " ").trim(),
+    PRINT_DESCRIPTION_MAX_LENGTH,
+  );
+
   return (
-    <Section className="pb-24 pt-28 md:pt-36">
+    <Section className="listing-print-page pb-24 pt-28 md:pt-36">
       <JsonLd data={productJsonLd} />
       <Container>
-        <div className="mx-auto flex max-w-[880px] flex-col gap-10">
+        <div className="listing-print-stack mx-auto flex max-w-[880px] flex-col gap-10">
           <div className="listing-header flex flex-col gap-3">
             {listing.mortgageAvailable ? (
               <span className="w-fit rounded-[3px] bg-accent px-2 py-1 text-[11px] font-bold text-accent-ink">
@@ -164,7 +178,7 @@ export default async function ListingPage({
             </div>
           ) : (
             <PhotoPlaceholder
-              className="listing-photo-fallback aspect-[16/9] rounded-[4px]"
+              className="no-print aspect-[16/9] rounded-[4px]"
               assetHint={`фото объекта «${listing.title}»`}
             />
           )}
@@ -179,9 +193,19 @@ export default async function ListingPage({
           </div>
 
           {listing.description ? (
-            <div className="listing-description prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
+            <div className="no-print prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
               <RichText data={listing.description} />
             </div>
+          ) : null}
+
+          {/* Печатная версия показывает укороченное описание вместо полного
+              (см. PRINT_DESCRIPTION_MAX_LENGTH выше) — чтобы вместе с ПОЛНЫМ
+              блоком характеристик, фото и контактами всё уместилось на один
+              лист А4. */}
+          {printDescription ? (
+            <p className="print-only text-[13px] leading-relaxed">
+              {printDescription}
+            </p>
           ) : null}
 
           <div className="no-print flex flex-wrap gap-3">

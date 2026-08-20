@@ -135,8 +135,9 @@ export function richTextToPlainText(
 const META_DESCRIPTION_MAX_LENGTH = 160;
 
 // Обрезает по границе слова и добавляет многоточие — чтобы описание в
-// выдаче поисковика не обрывалось посреди слова.
-function truncateAtWord(text: string, maxLength: number): string {
+// выдаче поисковика (и в печатной версии объекта, см. katalog/obyekt/[id])
+// не обрывалось посреди слова.
+export function truncateAtWord(text: string, maxLength: number): string {
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
   const cut = trimmed.slice(0, maxLength);
