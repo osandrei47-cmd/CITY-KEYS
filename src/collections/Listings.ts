@@ -278,6 +278,16 @@ export const Listings: CollectionConfig = {
           ],
         },
         {
+          name: "residentialComplex",
+          label: "Жилой комплекс",
+          type: "relationship",
+          relationTo: "residential-complexes",
+          admin: {
+            description:
+              "Заполняется только для планировок в новостройках — привязывает объект к странице ЖК (/zhk/slug). Для обычных объектов каталога оставить пустым.",
+          },
+        },
+        {
           name: "buildingType",
           label: "Тип дома",
           type: "select",

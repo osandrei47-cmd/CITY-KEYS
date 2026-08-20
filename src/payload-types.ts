@@ -245,6 +245,10 @@ export interface Listing {
     totalDocs?: number;
   };
   dealType: 'sale' | 'rent';
+  /**
+   * Заполняется только для планировок в новостройках — привязывает объект к странице ЖК (/zhk/slug). Для обычных объектов каталога оставить пустым.
+   */
+  residentialComplex?: (number | null) | ResidentialComplex;
   buildingType?: ('brick' | 'panel' | 'monolith' | 'block' | 'wood') | null;
   mortgageAvailable?: boolean | null;
   /**
@@ -321,16 +325,41 @@ export interface ResidentialComplex {
   /**
    * Как будет показано на сайте целиком — например «ЖК «Солнечная сторона»»
    */
-  name: string;
+  title: string;
   /**
    * Латиницей, без пробелов — например «sunny-side». Страница ЖК будет по адресу /zhk/slug
    */
   slug: string;
   coverPhoto?: (number | null) | Media;
   /**
-   * Пока не обязательно — используется только на странице ЖК, наполнение планировками/галереей и остальным контентом придёт отдельной задачей
+   * Необязательно — дополнительные фото ЖК для страницы /zhk/slug
+   */
+  gallery?: (number | Media)[] | null;
+  /**
+   * 1-2 предложения для карточки в каталоге /novostroyki
    */
   shortDescription?: string | null;
+  /**
+   * Инфраструктура, сроки сдачи, застройщик и т.д. — для страницы /zhk/slug
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  address?: string | null;
+  developer?: string | null;
+  status: 'planned' | 'under-construction' | 'completed' | 'frozen';
   /**
    * Выключите, если карточка ЖК ещё не готова к публикации
    */
@@ -530,6 +559,7 @@ export interface ListingsSelect<T extends boolean = true> {
   status?: T;
   leads?: T;
   dealType?: T;
+  residentialComplex?: T;
   buildingType?: T;
   mortgageAvailable?: T;
   lat?: T;
@@ -590,10 +620,15 @@ export interface TasksSelect<T extends boolean = true> {
  * via the `definition` "residential-complexes_select".
  */
 export interface ResidentialComplexesSelect<T extends boolean = true> {
-  name?: T;
+  title?: T;
   slug?: T;
   coverPhoto?: T;
+  gallery?: T;
   shortDescription?: T;
+  description?: T;
+  address?: T;
+  developer?: T;
+  status?: T;
   isPublished?: T;
   updatedAt?: T;
   createdAt?: T;

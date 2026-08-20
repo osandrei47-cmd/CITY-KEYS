@@ -7,8 +7,8 @@ export const ResidentialComplexes: CollectionConfig = {
     plural: "Жилые комплексы (Новостройки)",
   },
   admin: {
-    useAsTitle: "name",
-    defaultColumns: ["name", "isPublished"],
+    useAsTitle: "title",
+    defaultColumns: ["title", "status", "isPublished"],
   },
   access: {
     // На сайте видны только объекты со статусом "Показывать на сайте"
@@ -19,7 +19,7 @@ export const ResidentialComplexes: CollectionConfig = {
   },
   fields: [
     {
-      name: "name",
+      name: "title",
       label: "Название ЖК",
       type: "text",
       required: true,
@@ -44,12 +44,53 @@ export const ResidentialComplexes: CollectionConfig = {
       relationTo: "media",
     },
     {
+      name: "gallery",
+      label: "Галерея",
+      type: "upload",
+      relationTo: "media",
+      hasMany: true,
+      admin: {
+        description: "Необязательно — дополнительные фото ЖК для страницы /zhk/slug",
+      },
+    },
+    {
       name: "shortDescription",
       label: "Краткое описание",
       type: "textarea",
       admin: {
-        description: "Пока не обязательно — используется только на странице ЖК, наполнение планировками/галереей и остальным контентом придёт отдельной задачей",
+        description: "1-2 предложения для карточки в каталоге /novostroyki",
       },
+    },
+    {
+      name: "description",
+      label: "Полное описание",
+      type: "richText",
+      admin: {
+        description: "Инфраструктура, сроки сдачи, застройщик и т.д. — для страницы /zhk/slug",
+      },
+    },
+    {
+      name: "address",
+      label: "Адрес / локация",
+      type: "text",
+    },
+    {
+      name: "developer",
+      label: "Застройщик",
+      type: "text",
+    },
+    {
+      name: "status",
+      label: "Статус",
+      type: "select",
+      required: true,
+      defaultValue: "under-construction",
+      options: [
+        { label: "На этапе проекта", value: "planned" },
+        { label: "Строится", value: "under-construction" },
+        { label: "Сдан", value: "completed" },
+        { label: "Заморожен", value: "frozen" },
+      ],
     },
     {
       name: "isPublished",
