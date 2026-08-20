@@ -7,12 +7,14 @@ import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Quote } from "@/components/ui/quote";
-import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
 import { BlogCard } from "@/components/ui/blog-card";
+import { ListingCard } from "@/components/ui/listing-card";
 import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
 import { HouseUpIcon, CraneIcon } from "@/components/ui/mesh-icons";
 import { blogPosts } from "@/lib/blog-posts";
 import { contacts } from "@/lib/nav";
+import { getPayloadClient } from "@/lib/payload-client";
+import { type Listing } from "@/lib/listing-types";
 import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { buildRealEstateAgentJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -46,7 +48,19 @@ const directions = [
   { label: "Новостройки", href: "/novostroyki", icon: CraneIcon },
 ];
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const payload = await getPayloadClient();
+  const { docs } = await payload.find({
+    collection: "listings",
+    where: { status: { not_equals: "sold" } },
+    sort: "-createdAt",
+    depth: 1,
+    limit: 3,
+  });
+  const featuredListings = docs as unknown as Listing[];
+
   return (
     <>
       <JsonLd data={buildRealEstateAgentJsonLd()} />
@@ -112,22 +126,17 @@ export default function HomePage() {
             Актуальные объекты
           </h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex flex-col gap-3">
-              <PhotoPlaceholder
-                className="aspect-[4/3] rounded-[4px]"
-                assetHint="видео-превью объекта — подключится вместе с каталогом"
-              />
-              <div className="h-3 w-2/3 rounded bg-surface" />
-              <div className="h-3 w-1/3 rounded bg-surface" />
-            </div>
-          ))}
-        </div>
-        <p className="mt-6 text-[12.5px] text-ink-secondary">
-          Витрина объектов подключится к данным каталога на следующем этапе —
-          сейчас показана только вёрстка карточки.
-        </p>
+        {featuredListings.length ? (
+          <div className="grid gap-6 md:grid-cols-3">
+            {featuredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-[14px] text-ink-secondary">
+            Сейчас нет опубликованных объектов — загляните в каталог позже.
+          </p>
+        )}
         <div className="mt-8">
           <Button href="/katalog" variant="ghost">
             Смотреть все объекты
