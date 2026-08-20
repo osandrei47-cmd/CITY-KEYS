@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { Section } from "@/components/layout/section";
 import { PageHero } from "@/components/ui/page-hero";
-import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
+import { ComplexCard } from "@/components/ui/complex-card";
 import { getPayloadClient } from "@/lib/payload-client";
-import { isMediaDoc } from "@/lib/listing-types";
-import type { ResidentialComplex } from "@/payload-types";
+import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import type { ResidentialComplex } from "@/lib/complex-types";
+
+const TITLE = "Новостройки — CITY KEYS";
+const DESCRIPTION =
+  "Жилые комплексы, с которыми работает CITY KEYS — планировки, условия покупки и актуальные цены от застройщика.";
 
 export const metadata: Metadata = {
-  title: "Новостройки — CITY KEYS",
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: buildOpenGraph({ title: TITLE, description: DESCRIPTION, path: "/novostroyki" }),
+  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
+  alternates: buildCanonical("/novostroyki"),
 };
 
 export const dynamic = "force-dynamic";
@@ -19,7 +25,7 @@ export default async function NewBuildingsPage() {
   const { docs } = await payload.find({
     collection: "residential-complexes",
     where: { isPublished: { equals: true } },
-    sort: "name",
+    sort: "title",
     depth: 1,
     limit: 100,
   });
@@ -43,36 +49,9 @@ export default async function NewBuildingsPage() {
       <Section>
         {complexes.length ? (
           <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
-            {complexes.map((complex) => {
-              const cover = isMediaDoc(complex.coverPhoto) ? complex.coverPhoto : null;
-              return (
-                <Link
-                  key={complex.id}
-                  href={`/zhk/${complex.slug}`}
-                  className="group flex flex-col gap-3"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-[4px]">
-                    {cover?.url ? (
-                      <Image
-                        src={cover.url}
-                        alt={cover.alt || complex.name}
-                        fill
-                        sizes="(min-width: 768px) 33vw, 100vw"
-                        className="object-cover transition-transform group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <PhotoPlaceholder
-                        className="h-full w-full"
-                        assetHint={`фото ЖК «${complex.name}»`}
-                      />
-                    )}
-                  </div>
-                  <span className="text-[16px] font-bold group-hover:text-accent">
-                    {complex.name}
-                  </span>
-                </Link>
-              );
-            })}
+            {complexes.map((complex) => (
+              <ComplexCard key={complex.id} complex={complex} />
+            ))}
           </div>
         ) : (
           <p className="text-[14px] text-ink-secondary">

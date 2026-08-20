@@ -1,5 +1,6 @@
 export const mainNav = [
   { href: "/katalog", label: "Каталог" },
+  { href: "/novostroyki", label: "Новостройки" },
   { href: "/proekty", label: "Проекты" },
   { href: "/uslugi", label: "Услуги" },
   { href: "/ipoteka", label: "Ипотека" },
