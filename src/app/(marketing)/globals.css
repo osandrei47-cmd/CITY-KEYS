@@ -32,3 +32,39 @@ body {
   background: var(--accent);
   color: var(--accent-ink);
 }
+
+/* Печать (сейчас используется только на странице объекта каталога, см.
+   /katalog/obyekt/[id] — кнопка "Распечатать"). Сайт тёмный, печать должна
+   быть на белом — проще переопределить те же CSS-переменные, что и весь
+   остальной сайт использует через Tailwind theme(), чем расписывать
+   отдельные цвета для каждого компонента. */
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f4f4f4;
+    --ink: #0d0f12;
+    --ink-secondary: #444444;
+    --line: #cccccc;
+    --accent: #b5793a;
+    --accent-ink: #ffffff;
+  }
+
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+}
+
+.print-only {
+  display: none;
+}

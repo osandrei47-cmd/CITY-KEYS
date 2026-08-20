@@ -6,6 +6,7 @@ import { Section } from "@/components/layout/section";
 import { Container } from "@/components/layout/container";
 import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
 import { Button } from "@/components/ui/button";
+import { PrintButton } from "@/components/ui/print-button";
 import { getPayloadClient } from "@/lib/payload-client";
 import {
   balconyLabels,
@@ -142,6 +143,9 @@ export default async function ListingPage({
             <p className="text-[26px] font-extrabold text-accent">
               {formatPrice(listing.price)}
             </p>
+            <div className="no-print">
+              <PrintButton />
+            </div>
           </div>
 
           {photos.length ? (
@@ -177,7 +181,7 @@ export default async function ListingPage({
             </div>
           ) : null}
 
-          <div className="flex flex-wrap gap-3">
+          <div className="no-print flex flex-wrap gap-3">
             <Button href={`/kontakty?listing=${listing.id}`}>Оставить заявку</Button>
             <Button href={contacts.telegram} variant="ghost">
               Telegram
@@ -185,6 +189,15 @@ export default async function ListingPage({
             <Button href={contacts.max} variant="ghost">
               MAX
             </Button>
+          </div>
+
+          {/* Показывается только при печати (см. .print-only в globals.css) —
+              чтобы у распечатанного/сохранённого в PDF листа были контакты
+              агентства, даже если его показали не с телефона у сайта. */}
+          <div className="print-only border-t border-line pt-4">
+            <p className="font-semibold">Андрей Осипов — CITY KEYS</p>
+            <p>{contacts.phone}</p>
+            <p>city-keys.ru</p>
           </div>
         </div>
       </Container>
