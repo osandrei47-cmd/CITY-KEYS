@@ -158,6 +158,13 @@ export default function AboutPage() {
           </p>
           <div className="mt-2 flex flex-wrap gap-3">
             <Button href="/kontakty">Оставить заявку</Button>
+            <Button
+              href={`tel:${contacts.phone.replace(/[^\d+]/g, "")}`}
+              variant="ghost"
+              ariaLabel="Позвонить"
+            >
+              Позвонить
+            </Button>
             <Button href={contacts.telegram} variant="ghost">
               Telegram
             </Button>
