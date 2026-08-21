@@ -6,6 +6,7 @@ export const LEAD_SOURCES = [
   { value: "ipoteka-quiz", label: "Квиз «Какую ставку одобрят»" },
   { value: "katalog-obyekt", label: "Страница объекта в каталоге" },
   { value: "proekt-ust-luga-izhs", label: "Лендинг «Усть-Луга ИЖС»" },
+  { value: "zhk-presentation", label: "Презентация ЖК (со страницы комплекса)" },
   { value: "other", label: "Другое" },
 ] as const;
 

@@ -8,7 +8,10 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { ListingCard } from "@/components/ui/listing-card";
 import { RoomsFilter } from "@/components/ui/rooms-filter";
 import { ComingSoonNote } from "@/components/ui/coming-soon-note";
+import { ZhkPresentationForm } from "@/components/zhk/presentation-form";
 import { getPayloadClient } from "@/lib/payload-client";
+import { zhkPresentationExists } from "@/lib/zhk-presentation-s3";
+import { zhkVideoExists, zhkVideoUrl } from "@/lib/zhk-video";
 import { isMediaDoc, type Listing } from "@/lib/listing-types";
 import {
   buildComplexMetaDescription,
@@ -91,7 +94,11 @@ export default async function ResidentialComplexPage({
   const complex = await getComplex(slug);
   if (!complex) notFound();
 
-  const listings = await getComplexListings(complex.id);
+  const [listings, hasPresentation, hasVideo] = await Promise.all([
+    getComplexListings(complex.id),
+    zhkPresentationExists(complex.slug),
+    zhkVideoExists(complex.slug),
+  ]);
 
   const availableRooms = Array.from(
     new Set(listings.map((l) => l.rooms).filter((r): r is RoomsValue => Boolean(r))),
@@ -123,6 +130,28 @@ export default async function ResidentialComplexPage({
         photoAspect="4/3"
       />
 
+      {/* Видео — та же схема, что на /proekty/ust-luga-izhs: прямая
+          публичная ссылка на S3, без поля в схеме residential-complexes.
+          Блок просто не рендерится, пока по условному пути в бакете нет
+          файла (см. src/lib/zhk-video.ts) — не нужно ничего чистить, когда
+          видео появится, оно подхватится само. */}
+      {hasVideo ? (
+        <Section className="pt-0">
+          <Eyebrow>Видео</Eyebrow>
+          <h2 className="mt-3 text-[20px] font-extrabold">{complex.title} на видео</h2>
+          <div className="mt-6 overflow-hidden rounded-[4px] border-2 border-accent bg-surface">
+            <video
+              controls
+              preload="none"
+              poster={cover?.url || undefined}
+              className="aspect-video w-full"
+            >
+              <source src={zhkVideoUrl(complex.slug)} type="video/mp4" />
+            </video>
+          </div>
+        </Section>
+      ) : null}
+
       <Section className="pt-0">
         <div className="flex flex-wrap gap-x-8 gap-y-3 rounded-[4px] border border-line bg-surface p-6">
           {metaLines.map((line) => (
@@ -139,6 +168,20 @@ export default async function ResidentialComplexPage({
           </div>
         ) : null}
       </Section>
+
+      {/* Презентация — та же лид-гейт-механика, что на /proekty/ust-luga-izhs
+          (см. src/components/zhk/presentation-form.tsx): PDF отдаётся только
+          после имени и телефона, файл лежит приватно в S3, без публичного
+          URL. Блок скрыт, пока для этого ЖК файл не загружен. */}
+      {hasPresentation ? (
+        <Section className="pt-0">
+          <Eyebrow>Презентация</Eyebrow>
+          <h2 className="mt-3 text-[20px] font-extrabold">Полная презентация ЖК</h2>
+          <div className="mt-6">
+            <ZhkPresentationForm slug={complex.slug} title={complex.title} />
+          </div>
+        </Section>
+      ) : null}
 
       {gallery.length ? (
         <Section className="pt-0">

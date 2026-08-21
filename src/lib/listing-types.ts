@@ -72,7 +72,11 @@ export const dealTypeLabels: Record<Listing["dealType"], string> = {
   rent: "Аренда",
 };
 
+// price обязателен в схеме (min: 0) — для планировок в новостройках, где
+// цена ещё не согласована с застройщиком, 0 используется как признак
+// "цены пока нет", а не как настоящая нулевая стоимость.
 export function formatPrice(price: number): string {
+  if (!price) return "Цена по запросу";
   return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
 }
 
