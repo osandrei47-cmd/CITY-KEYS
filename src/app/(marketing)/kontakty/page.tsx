@@ -81,6 +81,9 @@ export default async function ContactsPage({
                 {contacts.phone} · {contacts.email}
               </p>
               <div className="mt-1 flex gap-4 font-semibold text-accent">
+                <a href={`tel:${contacts.phone.replace(/[^\d+]/g, "")}`} aria-label="Позвонить">
+                  Позвонить
+                </a>
                 <a href={contacts.telegram} target="_blank" rel="noopener noreferrer">
                   Telegram
                 </a>
