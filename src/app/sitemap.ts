@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPayloadClient } from "@/lib/payload-client";
 import { hasHandBuiltProjectPage } from "@/lib/project-pages";
 import { SITE_URL } from "@/lib/feed/constants";
-import type { Listing, Project, ResidentialComplex } from "@/payload-types";
+import type { BlogPost, Listing, Project, ResidentialComplex } from "@/payload-types";
 
 // Карта сайта не обязана быть в реальном времени — раз в час более чем
 // достаточно для того, как часто её вообще перечитывают поисковики.
@@ -31,26 +31,33 @@ const STATIC_PATHS = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayloadClient();
 
-  const [{ docs: projectDocs }, { docs: listingDocs }, { docs: complexDocs }] = await Promise.all([
-    payload.find({
-      collection: "projects",
-      where: { isPublished: { equals: true } },
-      depth: 0,
-      limit: 1000,
-    }),
-    payload.find({
-      collection: "listings",
-      where: { status: { not_equals: "sold" } },
-      depth: 0,
-      limit: 5000,
-    }),
-    payload.find({
-      collection: "residential-complexes",
-      where: { isPublished: { equals: true } },
-      depth: 0,
-      limit: 1000,
-    }),
-  ]);
+  const [{ docs: projectDocs }, { docs: listingDocs }, { docs: complexDocs }, { docs: blogDocs }] =
+    await Promise.all([
+      payload.find({
+        collection: "projects",
+        where: { isPublished: { equals: true } },
+        depth: 0,
+        limit: 1000,
+      }),
+      payload.find({
+        collection: "listings",
+        where: { status: { not_equals: "sold" } },
+        depth: 0,
+        limit: 5000,
+      }),
+      payload.find({
+        collection: "residential-complexes",
+        where: { isPublished: { equals: true } },
+        depth: 0,
+        limit: 1000,
+      }),
+      payload.find({
+        collection: "blog-posts",
+        where: { isPublished: { equals: true } },
+        depth: 0,
+        limit: 1000,
+      }),
+    ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
     url: `${SITE_URL}${path}`,
@@ -91,5 +98,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticEntries, ...projectEntries, ...listingEntries, ...complexEntries];
+  const blogEntries: MetadataRoute.Sitemap = (blogDocs as unknown as BlogPost[]).map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}`,
+    lastModified: post.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  return [...staticEntries, ...projectEntries, ...listingEntries, ...complexEntries, ...blogEntries];
 }

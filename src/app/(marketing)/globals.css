@@ -114,3 +114,48 @@ body {
 .print-only {
   display: none;
 }
+
+/* Стили для richText-полей (описание объекта/ЖК, текст статьи блога) —
+   Payload/Lexical рендерит заголовки/списки/жирный текст без собственных
+   классов, а Tailwind preflight обнуляет их дефолтные отступы браузера, так
+   что без этого блока весь текст слипается в одну сплошную массу. */
+.prose-listing > :not(:first-child) {
+  margin-top: 1.1em;
+}
+
+.prose-listing h2 {
+  margin-top: 1.75em;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.prose-listing ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  list-style: none;
+  padding: 0;
+}
+
+.prose-listing li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+}
+
+.prose-listing li::before {
+  content: "";
+  flex-shrink: 0;
+  margin-top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.prose-listing strong {
+  font-weight: 700;
+  color: var(--ink);
+}

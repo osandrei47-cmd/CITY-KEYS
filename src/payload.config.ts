@@ -15,6 +15,7 @@ import { Leads } from "./collections/Leads";
 import { Tasks } from "./collections/Tasks";
 import { ResidentialComplexes } from "./collections/ResidentialComplexes";
 import { Projects } from "./collections/Projects";
+import { BlogPosts } from "./collections/BlogPosts";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -42,7 +43,7 @@ export default buildConfig({
     supportedLanguages: { ru, en },
     fallbackLanguage: "ru",
   },
-  collections: [Users, Media, Listings, Leads, Tasks, ResidentialComplexes, Projects],
+  collections: [Users, Media, Listings, Leads, Tasks, ResidentialComplexes, Projects, BlogPosts],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   plugins: [

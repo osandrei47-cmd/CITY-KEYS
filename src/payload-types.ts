@@ -74,6 +74,7 @@ export interface Config {
     tasks: Task;
     'residential-complexes': ResidentialComplex;
     projects: Project;
+    'blog-posts': BlogPost;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -95,6 +96,7 @@ export interface Config {
     tasks: TasksSelect<false> | TasksSelect<true>;
     'residential-complexes': ResidentialComplexesSelect<false> | ResidentialComplexesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -404,6 +406,61 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts".
+ */
+export interface BlogPost {
+  id: number;
+  title: string;
+  /**
+   * Латиницей, без пробелов — например «sdelka-distantsionno». Статья будет по адресу /blog/slug
+   */
+  slug: string;
+  /**
+   * Необязательно — если не задана, на карточке и в превью для соцсетей используется общая заглушка
+   */
+  coverPhoto?: (number | null) | Media;
+  category:
+    'Кейсы сделок' | 'Юридические вопросы и риски' | 'Рынок недвижимости' | 'Ипотека' | 'Гид покупателя/продавца';
+  /**
+   * Например «3 мин» — на глаз, автоматически не считается. Необязательно.
+   */
+  readTime?: string | null;
+  /**
+   * 1-2 предложения для карточки в списке /blog и для превью в соцсетях
+   */
+  excerpt: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  closingQuoteText?: string | null;
+  closingQuoteAuthor?: string | null;
+  /**
+   * Например «Яндекс»
+   */
+  closingQuoteSource?: string | null;
+  ctaLabel?: string | null;
+  publishedAt: string;
+  /**
+   * Выключите, если статья ещё не готова к публикации
+   */
+  isPublished?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -453,6 +510,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'blog-posts';
+        value: number | BlogPost;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -651,6 +712,27 @@ export interface ProjectsSelect<T extends boolean = true> {
   shortDescription?: T;
   status?: T;
   metric?: T;
+  isPublished?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  coverPhoto?: T;
+  category?: T;
+  readTime?: T;
+  excerpt?: T;
+  content?: T;
+  closingQuoteText?: T;
+  closingQuoteAuthor?: T;
+  closingQuoteSource?: T;
+  ctaLabel?: T;
+  publishedAt?: T;
   isPublished?: T;
   updatedAt?: T;
   createdAt?: T;

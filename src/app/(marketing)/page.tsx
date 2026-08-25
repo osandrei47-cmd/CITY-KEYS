@@ -11,10 +11,10 @@ import { BlogCard } from "@/components/ui/blog-card";
 import { ListingCard } from "@/components/ui/listing-card";
 import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
 import { HouseUpIcon, CraneIcon } from "@/components/ui/mesh-icons";
-import { blogPosts } from "@/lib/blog-posts";
 import { contacts } from "@/lib/nav";
 import { getPayloadClient } from "@/lib/payload-client";
 import { type Listing } from "@/lib/listing-types";
+import { type BlogPost } from "@/lib/blog-types";
 import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { buildRealEstateAgentJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -52,14 +52,24 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   const payload = await getPayloadClient();
-  const { docs } = await payload.find({
-    collection: "listings",
-    where: { status: { not_equals: "sold" } },
-    sort: "-createdAt",
-    depth: 1,
-    limit: 3,
-  });
-  const featuredListings = docs as unknown as Listing[];
+  const [{ docs: listingDocs }, { docs: blogDocs }] = await Promise.all([
+    payload.find({
+      collection: "listings",
+      where: { status: { not_equals: "sold" } },
+      sort: "-createdAt",
+      depth: 1,
+      limit: 3,
+    }),
+    payload.find({
+      collection: "blog-posts",
+      where: { isPublished: { equals: true } },
+      sort: "-publishedAt",
+      depth: 1,
+      limit: 3,
+    }),
+  ]);
+  const featuredListings = listingDocs as unknown as Listing[];
+  const latestPosts = blogDocs as unknown as BlogPost[];
 
   return (
     <>
@@ -224,8 +234,16 @@ export default async function HomePage() {
           <h2 className="mt-2 text-[26px] font-extrabold">Из блога</h2>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
-          {blogPosts.map((post) => (
-            <BlogCard key={post.slug} {...post} />
+          {latestPosts.map((post) => (
+            <BlogCard
+              key={post.slug}
+              slug={post.slug}
+              category={post.category}
+              title={post.title}
+              excerpt={post.excerpt}
+              readTime={post.readTime}
+              coverPhoto={post.coverPhoto}
+            />
           ))}
         </div>
         <div className="mt-10">
