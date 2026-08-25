@@ -9,9 +9,11 @@ import { ListingCard } from "@/components/ui/listing-card";
 import { RoomsFilter } from "@/components/ui/rooms-filter";
 import { ComingSoonNote } from "@/components/ui/coming-soon-note";
 import { ZhkPresentationForm } from "@/components/zhk/presentation-form";
+import { IconCheck } from "@/components/ui/icons";
 import { getPayloadClient } from "@/lib/payload-client";
 import { zhkPresentationExists } from "@/lib/zhk-presentation-s3";
 import { zhkVideoExists, zhkVideoUrl } from "@/lib/zhk-video";
+import { ZHK_KEY_FACTS } from "@/lib/zhk-key-facts";
 import { isMediaDoc, type Listing } from "@/lib/listing-types";
 import {
   buildComplexMetaDescription,
@@ -19,7 +21,7 @@ import {
   complexStatusLabels,
   type ResidentialComplex,
 } from "@/lib/complex-types";
-import type { RoomsValue } from "@/lib/zhk-filters";
+import { roomsOrder, type RoomsValue } from "@/lib/zhk-filters";
 import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -94,11 +96,18 @@ export default async function ResidentialComplexPage({
   const complex = await getComplex(slug);
   if (!complex) notFound();
 
-  const [listings, hasPresentation, hasVideo] = await Promise.all([
+  const [fetchedListings, hasPresentation, hasVideo] = await Promise.all([
     getComplexListings(complex.id),
     zhkPresentationExists(complex.slug),
     zhkVideoExists(complex.slug),
   ]);
+
+  // Сначала все 1-комнатные, потом 2-комнатные и т.д. — сортировка стабильна,
+  // так что порядок "как сейчас" (по цене, см. getComplexListings) сохраняется
+  // внутри каждой группы комнатности.
+  const listings = [...fetchedListings].sort(
+    (a, b) => roomsOrder.indexOf(a.rooms ?? "studio") - roomsOrder.indexOf(b.rooms ?? "studio"),
+  );
 
   const availableRooms = Array.from(
     new Set(listings.map((l) => l.rooms).filter((r): r is RoomsValue => Boolean(r))),
@@ -117,6 +126,8 @@ export default async function ResidentialComplexPage({
     { label: "Статус", value: complexStatusLabels[complex.status] },
   ].filter((v): v is { label: string; value: string } => v !== null);
 
+  const keyFacts = ZHK_KEY_FACTS[complex.slug];
+
   return (
     <>
       <PageHero
@@ -126,8 +137,6 @@ export default async function ResidentialComplexPage({
         photoSrc={cover?.url || undefined}
         photoAlt={cover?.alt || complex.title}
         photoAssetHint={`фото ЖК «${complex.title}»`}
-        layout="split"
-        photoAspect="4/3"
       />
 
       {/* Видео — та же схема, что на /proekty/ust-luga-izhs: прямая
@@ -162,11 +171,32 @@ export default async function ResidentialComplexPage({
           ))}
         </div>
 
-        {complex.description ? (
-          <div className="prose-listing mt-8 text-[14.5px] leading-relaxed text-ink-secondary">
-            <RichText data={complex.description} />
-          </div>
-        ) : null}
+        <div className={`mt-8 grid gap-10 ${keyFacts ? "md:grid-cols-[1.3fr_1fr]" : ""}`}>
+          {complex.description ? (
+            <div className="prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
+              <RichText data={complex.description} />
+            </div>
+          ) : null}
+
+          {keyFacts ? (
+            <div>
+              <Eyebrow>Преимущества</Eyebrow>
+              <ul className="mt-4 flex flex-col gap-3">
+                {keyFacts.map((fact) => (
+                  <li
+                    key={fact}
+                    className="flex items-center gap-3 rounded-[4px] border border-line bg-surface p-3.5"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[3px] bg-accent/10 text-accent">
+                      <IconCheck className="h-5 w-5" />
+                    </span>
+                    <span className="text-[13.5px] font-semibold leading-snug">{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
       </Section>
 
       {/* Презентация — та же лид-гейт-механика, что на /proekty/ust-luga-izhs

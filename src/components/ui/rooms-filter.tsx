@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { zhkHref, type RoomsValue } from "@/lib/zhk-filters";
+import { roomsOrder, zhkHref, type RoomsValue } from "@/lib/zhk-filters";
 
 // Короче, чем roomsLabels из lib/listing-types.ts ("1 комната" и т.д.) —
 // для вкладок фильтра, где место в ряд ограничено.
@@ -11,8 +11,6 @@ const roomsFilterLabels: Record<RoomsValue, string> = {
   "4": "4-к",
   "5plus": "5+ к",
 };
-
-const roomsOrder: RoomsValue[] = ["studio", "1", "2", "3", "4", "5plus"];
 
 export function RoomsFilter({
   slug,
