@@ -6,10 +6,19 @@ import { Container } from "@/components/layout/container";
 import { PageHero } from "@/components/ui/page-hero";
 import { Quote } from "@/components/ui/quote";
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getPayloadClient } from "@/lib/payload-client";
 import { contacts } from "@/lib/nav";
-import { buildBlogMetaDescription, buildBlogMetaTitle, isMediaDoc, type BlogPost } from "@/lib/blog-types";
+import {
+  buildBlogMetaDescription,
+  buildBlogMetaTitle,
+  formatBlogDate,
+  isMediaDoc,
+  type BlogPost,
+} from "@/lib/blog-types";
 import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
+import { SITE_URL } from "@/lib/feed/constants";
+import { buildBlogArticleJsonLd, buildFaqPageJsonLd } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -67,9 +76,16 @@ export default async function BlogPostPage({
 
   const cover = isMediaDoc(post.coverPhoto) ? post.coverPhoto : null;
   const hasClosingQuote = Boolean(post.closingQuoteText && post.closingQuoteAuthor);
+  const keyStats = post.keyStats ?? [];
+  const faq = post.faq ?? [];
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  const imageUrl = cover?.url ? `${SITE_URL}${cover.url}` : `${SITE_URL}${DEFAULT_OG_IMAGE.url}`;
 
   return (
     <>
+      <JsonLd data={buildBlogArticleJsonLd({ post, url, imageUrl })} />
+      {faq.length ? <JsonLd data={buildFaqPageJsonLd(faq)} /> : null}
+
       <PageHero
         eyebrow={[post.category, post.readTime ? `${post.readTime} чтения` : null].filter(Boolean).join(" · ")}
         title={post.title}
@@ -82,9 +98,37 @@ export default async function BlogPostPage({
       <Section>
         <Container className="px-0">
           <article className="mx-auto flex max-w-[680px] flex-col gap-5">
+            <p className="text-[13px] text-ink-secondary">
+              {formatBlogDate(post.publishedAt)}
+              {post.author ? ` · ${post.author}` : ""}
+            </p>
+
+            {keyStats.length ? (
+              <dl className="grid gap-px overflow-hidden rounded-[4px] bg-line sm:grid-cols-3">
+                {keyStats.map((stat) => (
+                  <div key={stat.id ?? stat.label} className="flex flex-col gap-1 bg-surface px-4 py-3">
+                    <dt className="text-[13px] text-ink-secondary">{stat.label}</dt>
+                    <dd className="text-[16px] font-bold text-ink">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+
             <div className="prose-listing text-[14.5px] leading-relaxed text-ink-secondary">
               <RichText data={post.content} />
             </div>
+
+            {faq.length ? (
+              <div className="mt-2 flex flex-col gap-5">
+                <h2 className="text-[20px] font-extrabold text-ink">Частые вопросы</h2>
+                {faq.map((item) => (
+                  <div key={item.id ?? item.question} className="flex flex-col gap-1.5">
+                    <p className="text-[15px] font-bold text-ink">{item.question}</p>
+                    <p className="text-[14.5px] leading-relaxed text-ink-secondary">{item.answer}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
             {hasClosingQuote ? (
               <div className="mt-2">

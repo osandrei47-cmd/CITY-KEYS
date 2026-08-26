@@ -4,6 +4,7 @@ import { contacts } from "./nav";
 import { AGENCY_NAME, SITE_URL } from "./feed/constants";
 import { DEFAULT_OG_IMAGE } from "./seo";
 import type { Listing } from "./listing-types";
+import type { BlogPost } from "./blog-types";
 
 // Координаты офиса — БЦ «Волна», Кингисепп, ул. Октябрьская, д.18а/14.
 // Единственный источник для JSON-LD (главная, /kontakty) и для карты на
@@ -118,5 +119,49 @@ export function buildUstLugaIzhsJsonLd() {
       url,
       seller: { "@type": "RealEstateAgent", name: AGENCY_NAME },
     },
+  };
+}
+
+export function buildBlogArticleJsonLd({
+  post,
+  url,
+  imageUrl,
+}: {
+  post: BlogPost;
+  url: string;
+  imageUrl: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    image: imageUrl,
+    url,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt || post.publishedAt,
+    author: { "@type": "Person", name: post.author || "Андрей Осипов" },
+    publisher: {
+      "@type": "Organization",
+      name: AGENCY_NAME,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/images/hero-tower-color.jpg` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+  };
+}
+
+// FAQPage — только для статей, где реально есть блок вопрос-ответ (поле
+// faq в коллекции BlogPosts). Пустой массив сюда не передавать — Google
+// не даёт rich-сниппет для страницы без вопросов, а лишняя пустая
+// разметка на остальных статьях не нужна.
+export function buildFaqPageJsonLd(faq: { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
   };
 }

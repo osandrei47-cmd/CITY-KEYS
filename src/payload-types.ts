@@ -444,6 +444,30 @@ export interface BlogPost {
     };
     [k: string]: unknown;
   };
+  /**
+   * Отображается на странице статьи и в разметке для поисковиков
+   */
+  author?: string | null;
+  keyStats?:
+    | {
+        /**
+         * Например «1-комнатные»
+         */
+        label: string;
+        /**
+         * Например «35 000–50 000 ₽»
+         */
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   closingQuoteText?: string | null;
   closingQuoteAuthor?: string | null;
   /**
@@ -728,6 +752,21 @@ export interface BlogPostsSelect<T extends boolean = true> {
   readTime?: T;
   excerpt?: T;
   content?: T;
+  author?: T;
+  keyStats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   closingQuoteText?: T;
   closingQuoteAuthor?: T;
   closingQuoteSource?: T;

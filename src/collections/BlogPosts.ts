@@ -80,6 +80,82 @@ export const BlogPosts: CollectionConfig = {
       required: true,
     },
     {
+      name: "author",
+      label: "Автор",
+      type: "text",
+      defaultValue: "Андрей Осипов",
+      admin: {
+        description: "Отображается на странице статьи и в разметке для поисковиков",
+      },
+    },
+    {
+      type: "collapsible",
+      label: "Ключевые цифры вверху статьи (необязательно)",
+      admin: {
+        description:
+          "Короткая выжимка сразу после заголовка — например диапазоны цен. Подходит для статей рубрики «Рынок недвижимости»",
+      },
+      fields: [
+        {
+          name: "keyStats",
+          label: "Пункты",
+          type: "array",
+          labels: { singular: "Пункт", plural: "Пункты" },
+          fields: [
+            {
+              type: "row",
+              fields: [
+                {
+                  name: "label",
+                  label: "Подпись",
+                  type: "text",
+                  required: true,
+                  admin: { width: "50%", description: "Например «1-комнатные»" },
+                },
+                {
+                  name: "value",
+                  label: "Значение",
+                  type: "text",
+                  required: true,
+                  admin: { width: "50%", description: "Например «35 000–50 000 ₽»" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "collapsible",
+      label: "Вопросы и ответы — FAQ (необязательно)",
+      admin: {
+        description:
+          "Выводится отдельным блоком в конце статьи и попадает в разметку FAQPage для расширенных сниппетов в Google/Яндексе",
+      },
+      fields: [
+        {
+          name: "faq",
+          label: "Вопросы",
+          type: "array",
+          labels: { singular: "Вопрос", plural: "Вопросы" },
+          fields: [
+            {
+              name: "question",
+              label: "Вопрос",
+              type: "text",
+              required: true,
+            },
+            {
+              name: "answer",
+              label: "Ответ",
+              type: "textarea",
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: "collapsible",
       label: "Цитата в конце статьи (необязательно)",
       fields: [

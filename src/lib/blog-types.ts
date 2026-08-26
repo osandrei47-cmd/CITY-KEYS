@@ -27,3 +27,12 @@ export function buildBlogMetaTitle(post: BlogPost): string {
 export function buildBlogMetaDescription(post: BlogPost): string {
   return truncateAtWord(post.excerpt, META_DESCRIPTION_MAX_LENGTH);
 }
+
+export function formatBlogDate(dateString: string): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Moscow",
+  }).format(new Date(dateString));
+}

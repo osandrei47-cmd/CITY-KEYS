@@ -55,6 +55,23 @@ function resolveBuildId(): string {
 
 const nextConfig: NextConfig = {
   generateBuildId: () => resolveBuildId(),
+  // Канонический домен — city-keys.ru без www (см. SITE_URL в
+  // src/lib/feed/constants.ts и canonical/OG-теги на всех страницах). Без
+  // этого редиректа www.city-keys.ru и city-keys.ru — два разных URL с
+  // одинаковым контентом для поисковиков (дубли, размытие ссылочного веса),
+  // а Telegram/VK-превью и репосты с www-ссылкой не совпадали бы с
+  // canonical. 308 (permanent) — конкретный адрес не появится в другом виде
+  // задним числом, править на 307 не потребуется.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.city-keys.ru" }],
+        destination: "https://city-keys.ru/:path*",
+        permanent: true,
+      },
+    ];
+  },
   // См. cache-handler.mjs: в контейнере на Timeweb App Platform процесс
   // запускается от пользователя без прав на запись в .next/cache, поэтому
   // кэш (включая оптимизированные изображения) храним в памяти, а не на диске.
