@@ -89,6 +89,59 @@ export const BlogPosts: CollectionConfig = {
       },
     },
     {
+      name: "tldr",
+      label: "Краткое резюме (TL;DR)",
+      type: "textarea",
+      admin: {
+        description:
+          "Необязательный абзац сразу после даты/автора — текстом, а не карточками. Например короткое обобщение цифр статьи",
+      },
+    },
+    {
+      type: "collapsible",
+      label: "Таблица сравнения в теле статьи (необязательно)",
+      admin: {
+        description:
+          "Например «Тип квартиры / Диапазон аренды / Рыночный ориентир» — выводится в начале текста статьи, до основного описания",
+      },
+      fields: [
+        {
+          name: "comparisonTable",
+          label: "Строки таблицы",
+          type: "array",
+          labels: { singular: "Строка", plural: "Строки" },
+          fields: [
+            {
+              type: "row",
+              fields: [
+                {
+                  name: "label",
+                  label: "Тип",
+                  type: "text",
+                  required: true,
+                  admin: { width: "33%", description: "Например «1-комнатные»" },
+                },
+                {
+                  name: "range",
+                  label: "Диапазон",
+                  type: "text",
+                  required: true,
+                  admin: { width: "33%", description: "Например «35 000–50 000 ₽»" },
+                },
+                {
+                  name: "reference",
+                  label: "Ориентир",
+                  type: "text",
+                  required: true,
+                  admin: { width: "34%", description: "Например «40–45 тыс. ₽»" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
       type: "collapsible",
       label: "Ключевые цифры вверху статьи (необязательно)",
       admin: {

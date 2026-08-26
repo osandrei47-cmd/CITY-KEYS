@@ -448,6 +448,27 @@ export interface BlogPost {
    * Отображается на странице статьи и в разметке для поисковиков
    */
   author?: string | null;
+  /**
+   * Необязательный абзац сразу после даты/автора — текстом, а не карточками. Например короткое обобщение цифр статьи
+   */
+  tldr?: string | null;
+  comparisonTable?:
+    | {
+        /**
+         * Например «1-комнатные»
+         */
+        label: string;
+        /**
+         * Например «35 000–50 000 ₽»
+         */
+        range: string;
+        /**
+         * Например «40–45 тыс. ₽»
+         */
+        reference: string;
+        id?: string | null;
+      }[]
+    | null;
   keyStats?:
     | {
         /**
@@ -753,6 +774,15 @@ export interface BlogPostsSelect<T extends boolean = true> {
   excerpt?: T;
   content?: T;
   author?: T;
+  tldr?: T;
+  comparisonTable?:
+    | T
+    | {
+        label?: T;
+        range?: T;
+        reference?: T;
+        id?: T;
+      };
   keyStats?:
     | T
     | {
