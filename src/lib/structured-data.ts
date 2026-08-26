@@ -5,12 +5,26 @@ import { AGENCY_NAME, SITE_URL } from "./feed/constants";
 import { DEFAULT_OG_IMAGE } from "./seo";
 import type { Listing } from "./listing-types";
 import type { BlogPost } from "./blog-types";
+import type { Service } from "./service-types";
 
 // Координаты офиса — БЦ «Волна», Кингисепп, ул. Октябрьская, д.18а/14.
 // Единственный источник для JSON-LD (главная, /kontakty) и для карты на
 // /kontakty (кортеж [lat, lng] — формат, которого ждёт YandexMap) — не
 // дублировать в других местах.
 export const OFFICE_COORDINATES: [number, number] = [59.374028, 28.611297];
+
+const OFFICE_ADDRESS = {
+  "@type": "PostalAddress",
+  streetAddress: "ул. Октябрьская, д.18а/14, БЦ «Волна», 2 эт., оф.1",
+  addressLocality: "Кингисепп",
+  addressRegion: "Ленинградская область",
+  addressCountry: "RU",
+};
+
+const AREA_SERVED = {
+  "@type": "AdministrativeArea",
+  name: "Кингисеппский район, Ленинградская область",
+};
 
 // RealEstateAgent — не LocalBusiness: это специализированный подтип
 // LocalBusiness именно для агентств недвижимости (schema.org: Thing >
@@ -27,22 +41,13 @@ export function buildRealEstateAgentJsonLd() {
     image: `${SITE_URL}/images/andrey-office-suit.JPG`,
     telephone: contacts.phone,
     email: contacts.email,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "ул. Октябрьская, д.18а/14, БЦ «Волна», 2 эт., оф.1",
-      addressLocality: "Кингисепп",
-      addressRegion: "Ленинградская область",
-      addressCountry: "RU",
-    },
+    address: OFFICE_ADDRESS,
     geo: {
       "@type": "GeoCoordinates",
       latitude: OFFICE_COORDINATES[0],
       longitude: OFFICE_COORDINATES[1],
     },
-    areaServed: {
-      "@type": "AdministrativeArea",
-      name: "Кингисеппский район, Ленинградская область",
-    },
+    areaServed: AREA_SERVED,
     sameAs: [contacts.telegram, contacts.vk, contacts.whatsapp, contacts.max],
     // aggregateRating сюда намеренно НЕ добавлен — см. объяснение в
     // сообщении коммита и в чате: рейтинги 5,0/Авито и 4,5/Яндекс взяты с
@@ -147,6 +152,24 @@ export function buildBlogArticleJsonLd({
       logo: { "@type": "ImageObject", url: `${SITE_URL}/images/hero-tower-color.jpg` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
+  };
+}
+
+export function buildServiceJsonLd({ service, url }: { service: Service; url: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.shortDescription,
+    url,
+    areaServed: AREA_SERVED,
+    provider: {
+      "@type": "RealEstateAgent",
+      name: AGENCY_NAME,
+      telephone: contacts.phone,
+      address: OFFICE_ADDRESS,
+      url: SITE_URL,
+    },
   };
 }
 

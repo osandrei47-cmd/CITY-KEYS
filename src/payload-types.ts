@@ -75,6 +75,7 @@ export interface Config {
     'residential-complexes': ResidentialComplex;
     projects: Project;
     'blog-posts': BlogPost;
+    services: Service;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -97,6 +98,7 @@ export interface Config {
     'residential-complexes': ResidentialComplexesSelect<false> | ResidentialComplexesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -506,6 +508,61 @@ export interface BlogPost {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: number;
+  /**
+   * Например «Продажа и покупка недвижимости»
+   */
+  title: string;
+  /**
+   * Латиницей, без пробелов — например «arenda». Страница будет по адресу /uslugi/slug — этот же адрес используется для ссылок на услугу из статей блога
+   */
+  slug: string;
+  icon: 'house-arrows' | 'house-calendar' | 'house-gear' | 'house-handshake';
+  /**
+   * 1-2 предложения для карточки на /uslugi и для превью в соцсетях
+   */
+  shortDescription: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  ctaLabel?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  /**
+   * Меньше — выше в списке карточек
+   */
+  order?: number | null;
+  /**
+   * Выключите, если страница ещё не готова к публикации
+   */
+  isPublished?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -559,6 +616,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'blog-posts';
         value: number | BlogPost;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: number | Service;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -802,6 +863,31 @@ export interface BlogPostsSelect<T extends boolean = true> {
   closingQuoteSource?: T;
   ctaLabel?: T;
   publishedAt?: T;
+  isPublished?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  icon?: T;
+  shortDescription?: T;
+  content?: T;
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  metaTitle?: T;
+  metaDescription?: T;
+  order?: T;
   isPublished?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -4,7 +4,6 @@ import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { MeshGradientCard } from "@/components/ui/mesh-gradient-card";
-import { HouseArrowsIcon, HouseCalendarIcon, HouseGearIcon } from "@/components/ui/mesh-icons";
 import {
   IconScale,
   IconShieldCheck,
@@ -15,7 +14,11 @@ import {
 } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
+import { getPayloadClient } from "@/lib/payload-client";
+import { SERVICE_ICONS, type Service } from "@/lib/service-types";
 import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
 
 const TITLE = "Услуги — CITY KEYS";
 const DESCRIPTION =
@@ -38,27 +41,6 @@ export const metadata: Metadata = {
   twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
   alternates: buildCanonical("/uslugi"),
 };
-
-const propertyServices = [
-  {
-    title: "Продажа и покупка недвижимости",
-    text: "Полное сопровождение — от подбора объекта или поиска покупателя до подписания договора.",
-    icon: HouseArrowsIcon,
-    variant: 0,
-  },
-  {
-    title: "Аренда жилой и коммерческой недвижимости",
-    text: "Подбор арендатора или объекта, проверка условий, сопровождение сделки.",
-    icon: HouseCalendarIcon,
-    variant: 1,
-  },
-  {
-    title: "Управление недвижимостью",
-    text: "Сдаю и обслуживаю жилую и коммерческую недвижимость от лица собственника — без его постоянного участия.",
-    icon: HouseGearIcon,
-    variant: 2,
-  },
-];
 
 const expertiseServices = [
   {
@@ -125,7 +107,21 @@ function IconCard({
   );
 }
 
-export default function ServicesPage() {
+async function getServices(): Promise<Service[]> {
+  const payload = await getPayloadClient();
+  const { docs } = await payload.find({
+    collection: "services",
+    where: { isPublished: { equals: true } },
+    sort: "order",
+    depth: 0,
+    limit: 50,
+  });
+  return docs as unknown as Service[];
+}
+
+export default async function ServicesPage() {
+  const services = await getServices();
+
   return (
     <>
       <PageBannerHero
@@ -140,17 +136,17 @@ export default function ServicesPage() {
       <Section>
         <Eyebrow>Сделки с недвижимостью</Eyebrow>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
-          {propertyServices.map((s) => (
-            <div key={s.title} className="group flex flex-col gap-3">
+          {services.map((s, i) => (
+            <Link key={s.slug} href={`/uslugi/${s.slug}`} className="group flex flex-col gap-3">
               <MeshGradientCard
-                icon={s.icon}
-                variant={s.variant}
+                icon={SERVICE_ICONS[s.icon]}
+                variant={i}
                 iconSize={40}
                 className="aspect-[4/3] rounded-[4px]"
               />
-              <h3 className="text-[15px] font-bold">{s.title}</h3>
-              <p className="text-[13.5px] leading-relaxed text-ink-secondary">{s.text}</p>
-            </div>
+              <h3 className="text-[15px] font-bold group-hover:text-accent">{s.title}</h3>
+              <p className="text-[13.5px] leading-relaxed text-ink-secondary">{s.shortDescription}</p>
+            </Link>
           ))}
         </div>
       </Section>

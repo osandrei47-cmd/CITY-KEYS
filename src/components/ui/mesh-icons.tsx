@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { House, ArrowUpRight, ArrowLeftRight, CalendarDays, Settings, TreePine } from "lucide-react";
+import { House, ArrowUpRight, ArrowLeftRight, CalendarDays, Settings, TreePine, Handshake } from "lucide-react";
 
 // Составные и кастомные иконки для MeshGradientCard — используются там, где
 // в lucide-react нет готового подходящего значка (кран, «дом + …»).
@@ -44,6 +44,11 @@ export function HouseCalendarIcon(props: IconProps) {
 // Управление недвижимостью — шестерёнка на фоне дома
 export function HouseGearIcon(props: IconProps) {
   return <HouseBadgeIcon {...props} Badge={Settings} corner="bottom-right" />;
+}
+
+// Сопровождение сделки — дом с рукопожатием
+export function HouseHandshakeIcon(props: IconProps) {
+  return <HouseBadgeIcon {...props} Badge={Handshake} corner="bottom-right" />;
 }
 
 // Дачи — небольшой домик с деревом
