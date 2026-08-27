@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import { Section } from "@/components/layout/section";
 import { Container } from "@/components/layout/container";
 import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
+import { PhotoLightbox } from "@/components/ui/photo-lightbox";
 import { Button } from "@/components/ui/button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getPayloadClient } from "@/lib/payload-client";
@@ -163,19 +163,12 @@ export default async function ListingPage({
           </div>
 
           {photos.length ? (
-            <div className="listing-photos grid gap-3 md:grid-cols-2">
-              {photos.map((photo) => (
-                <div key={photo.id} className="relative aspect-[4/3] overflow-hidden rounded-[4px]">
-                  <Image
-                    src={photo.url!}
-                    alt={photo.alt || listing.title}
-                    fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            <PhotoLightbox
+              photos={photos}
+              containerClassName="listing-photos grid gap-3 md:grid-cols-2"
+              sizes="(min-width: 768px) 50vw, 100vw"
+              fallbackAlt={listing.title}
+            />
           ) : (
             <PhotoPlaceholder
               className="no-print aspect-[16/9] rounded-[4px]"

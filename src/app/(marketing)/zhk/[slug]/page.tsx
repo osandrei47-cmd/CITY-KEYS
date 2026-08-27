@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import { Section } from "@/components/layout/section";
@@ -8,6 +7,7 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { ListingCard } from "@/components/ui/listing-card";
 import { RoomsFilter } from "@/components/ui/rooms-filter";
 import { ComingSoonNote } from "@/components/ui/coming-soon-note";
+import { PhotoLightbox } from "@/components/ui/photo-lightbox";
 import { ZhkPresentationForm } from "@/components/zhk/presentation-form";
 import { IconCheck } from "@/components/ui/icons";
 import { getPayloadClient } from "@/lib/payload-client";
@@ -216,18 +216,13 @@ export default async function ResidentialComplexPage({
       {gallery.length ? (
         <Section className="pt-0">
           <Eyebrow>Галерея</Eyebrow>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-            {gallery.map((photo) => (
-              <div key={photo.id} className="relative aspect-[4/3] overflow-hidden rounded-[4px]">
-                <Image
-                  src={photo.url!}
-                  alt={photo.alt || complex.title}
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            ))}
+          <div className="mt-4">
+            <PhotoLightbox
+              photos={gallery}
+              containerClassName="grid gap-3 sm:grid-cols-2 md:grid-cols-3"
+              sizes="(min-width: 768px) 33vw, 100vw"
+              fallbackAlt={complex.title}
+            />
           </div>
         </Section>
       ) : null}
