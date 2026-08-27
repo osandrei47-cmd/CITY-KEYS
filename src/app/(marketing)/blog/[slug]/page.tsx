@@ -133,7 +133,7 @@ export default async function BlogPostPage({
                   <thead>
                     <tr className="border-b border-line bg-surface">
                       <th className="px-4 py-2.5 text-left font-bold text-ink">Тип квартиры</th>
-                      <th className="px-4 py-2.5 text-left font-bold text-ink">Диапазон аренды</th>
+                      <th className="px-4 py-2.5 text-left font-bold text-ink">Диапазон цен</th>
                       <th className="px-4 py-2.5 text-left font-bold text-ink">Рыночный ориентир</th>
                     </tr>
                   </thead>
