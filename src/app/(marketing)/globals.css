@@ -68,21 +68,25 @@ body {
      характеристик (ничего не сокращаем — самое важное) + укороченное
      описание (полное скрыто через .no-print, вместо него печатается
      короткий .print-only вариант, см. katalog/obyekt/[id]/page.tsx) +
-     компактное фото + контакты. Фото раньше резалось между страницами —
-     показываем только обложку (одну, без остальных фото) и заметно меньше
-     140mm, что было раньше, чтобы хватило места на всё остальное. */
+     сетка фото + контакты. Раньше показывали одно большое фото (65mm) —
+     по запросу заменили на сетку 2×2 из первых 4 фото объекта (если фото
+     меньше 4 — просто меньше плиток, сетка не растягивается на пустое
+     место). Плитки заметно меньше прежнего одного фото по высоте, чтобы
+     сетка в сумме не превышала прежний бюджет места на листе. */
   .listing-photos {
-    display: block !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3mm !important;
   }
 
-  .listing-photos > *:not(:first-child) {
+  .listing-photos > :nth-child(n + 5) {
     display: none !important;
   }
 
-  .listing-photos > *:first-child {
-    aspect-ratio: auto;
-    height: 65mm;
-    max-height: 65mm;
+  .listing-photos > * {
+    aspect-ratio: auto !important;
+    height: 28mm;
+    max-height: 28mm;
   }
 
   /* break-inside — современный синоним page-break-inside, оставляем оба
@@ -102,12 +106,12 @@ body {
      между блоками) — на печати шапки нет и место на счету, чтобы уместить
      всё на один лист. */
   .listing-print-page {
-    padding-top: 15mm !important;
+    padding-top: 10mm !important;
     padding-bottom: 8mm !important;
   }
 
   .listing-print-stack {
-    gap: 6mm !important;
+    gap: 4mm !important;
   }
 }
 
