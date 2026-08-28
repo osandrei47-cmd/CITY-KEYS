@@ -46,7 +46,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           ) : null}
           {listing.droneVideo ? (
             <span className="rounded-[3px] bg-bg/80 px-2 py-1 text-[10.5px] font-bold text-ink backdrop-blur-sm">
-              Видео с дрона
+              Видео
             </span>
           ) : null}
         </div>
