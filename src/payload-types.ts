@@ -72,6 +72,8 @@ export interface Config {
     listings: Listing;
     leads: Lead;
     tasks: Task;
+    deals: Deal;
+    'deal-checklist-links': DealChecklistLink;
     'residential-complexes': ResidentialComplex;
     projects: Project;
     'blog-posts': BlogPost;
@@ -88,6 +90,9 @@ export interface Config {
     leads: {
       tasks: 'tasks';
     };
+    deals: {
+      checklistLinks: 'deal-checklist-links';
+    };
   };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
@@ -95,6 +100,8 @@ export interface Config {
     listings: ListingsSelect<false> | ListingsSelect<true>;
     leads: LeadsSelect<false> | LeadsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
+    deals: DealsSelect<false> | DealsSelect<true>;
+    'deal-checklist-links': DealChecklistLinksSelect<false> | DealChecklistLinksSelect<true>;
     'residential-complexes': ResidentialComplexesSelect<false> | ResidentialComplexesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
@@ -380,6 +387,73 @@ export interface ResidentialComplex {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deals".
+ */
+export interface Deal {
+  id: number;
+  /**
+   * Можно оставить пустым — при сохранении сгенерируется автоматически по участникам. Если вписать своё название, оно больше не будет перезаписываться.
+   */
+  title?: string | null;
+  participants?:
+    | {
+        lead: number | Lead;
+        role: 'buyer' | 'seller' | 'owner' | 'guarantor';
+        id?: string | null;
+      }[]
+    | null;
+  listing?: (number | null) | Listing;
+  dealType: 'mortgage' | 'cash' | 'rent' | 'support';
+  stage: 'docs-review' | 'collecting-package' | 'bank-submission' | 'rosreestr' | 'completed';
+  documentsChecklist?:
+    | {
+        name: string;
+        received?: boolean | null;
+        comment?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  amount?: number | null;
+  notes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  checklistLinks?: {
+    docs?: (number | DealChecklistLink)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deal-checklist-links".
+ */
+export interface DealChecklistLink {
+  id: number;
+  deal: number | Deal;
+  participant: number | Lead;
+  /**
+   * Генерируется автоматически при сохранении — скопируйте ссылку и отправьте участнику вручную (WhatsApp/Telegram).
+   */
+  token?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
  */
 export interface Project {
@@ -606,6 +680,14 @@ export interface PayloadLockedDocument {
         value: number | Task;
       } | null)
     | ({
+        relationTo: 'deals';
+        value: number | Deal;
+      } | null)
+    | ({
+        relationTo: 'deal-checklist-links';
+        value: number | DealChecklistLink;
+      } | null)
+    | ({
         relationTo: 'residential-complexes';
         value: number | ResidentialComplex;
       } | null)
@@ -786,6 +868,47 @@ export interface TasksSelect<T extends boolean = true> {
   dueDate?: T;
   done?: T;
   reminderSentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deals_select".
+ */
+export interface DealsSelect<T extends boolean = true> {
+  title?: T;
+  participants?:
+    | T
+    | {
+        lead?: T;
+        role?: T;
+        id?: T;
+      };
+  listing?: T;
+  dealType?: T;
+  stage?: T;
+  documentsChecklist?:
+    | T
+    | {
+        name?: T;
+        received?: T;
+        comment?: T;
+        id?: T;
+      };
+  amount?: T;
+  notes?: T;
+  checklistLinks?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deal-checklist-links_select".
+ */
+export interface DealChecklistLinksSelect<T extends boolean = true> {
+  deal?: T;
+  participant?: T;
+  token?: T;
   updatedAt?: T;
   createdAt?: T;
 }

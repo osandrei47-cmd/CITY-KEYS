@@ -130,6 +130,21 @@ body {
   .listing-print-stack {
     gap: 4mm !important;
   }
+
+  /* Публичная страница чек-листа документов (/checklist/[token]) — та же
+     идея, что и у печати карточки объекта: большие экранные отступы под
+     sticky-шапку убираем, форма ввода телефона на печати не нужна (её уже
+     нет в DOM к моменту печати — чек-лист рендерится только после успешной
+     проверки, см. ChecklistGate), достаточно убрать только .no-print. */
+  .checklist-print-page {
+    padding-top: 10mm !important;
+    padding-bottom: 8mm !important;
+  }
+
+  .checklist-print-list {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 .print-only {

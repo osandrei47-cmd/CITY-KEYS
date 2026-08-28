@@ -13,6 +13,8 @@ import { Media } from "./collections/Media";
 import { Listings } from "./collections/Listings";
 import { Leads } from "./collections/Leads";
 import { Tasks } from "./collections/Tasks";
+import { Deals } from "./collections/Deals";
+import { DealChecklistLinks } from "./collections/DealChecklistLinks";
 import { ResidentialComplexes } from "./collections/ResidentialComplexes";
 import { Projects } from "./collections/Projects";
 import { BlogPosts } from "./collections/BlogPosts";
@@ -28,11 +30,18 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterNavLinks: ["@/components/admin/KanbanNavLink#KanbanNavLink"],
+      afterNavLinks: [
+        "@/components/admin/KanbanNavLink#KanbanNavLink",
+        "@/components/admin/DealsKanbanNavLink#DealsKanbanNavLink",
+      ],
       views: {
         leadsKanban: {
           Component: "@/components/admin/KanbanView#KanbanView",
           path: "/leads-kanban",
+        },
+        dealsKanban: {
+          Component: "@/components/admin/DealsKanbanView#DealsKanbanView",
+          path: "/deals-kanban",
         },
       },
     },
@@ -44,7 +53,19 @@ export default buildConfig({
     supportedLanguages: { ru, en },
     fallbackLanguage: "ru",
   },
-  collections: [Users, Media, Listings, Leads, Tasks, ResidentialComplexes, Projects, BlogPosts, Services],
+  collections: [
+    Users,
+    Media,
+    Listings,
+    Leads,
+    Tasks,
+    Deals,
+    DealChecklistLinks,
+    ResidentialComplexes,
+    Projects,
+    BlogPosts,
+    Services,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   plugins: [
