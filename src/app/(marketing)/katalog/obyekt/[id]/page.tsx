@@ -105,6 +105,7 @@ export default async function ListingPage({
   if (!listing) notFound();
 
   const photos = (listing.photos ?? []).filter(isMediaDoc);
+  const video = isMediaDoc(listing.droneVideo) ? listing.droneVideo : null;
 
   const listingUrl = `${SITE_URL}/katalog/obyekt/${listing.id}`;
   const productJsonLd = buildListingProductJsonLd({
@@ -175,6 +176,20 @@ export default async function ListingPage({
               assetHint={`фото объекта «${listing.title}»`}
             />
           )}
+
+          {video?.url ? (
+            <div className="no-print flex flex-col gap-3">
+              <h2 className="text-[15px] font-bold">Видео объекта</h2>
+              <video
+                controls
+                preload="none"
+                poster={photos[0]?.url || undefined}
+                className="aspect-video w-full rounded-[4px] border border-line bg-surface"
+              >
+                <source src={video.url} type={video.mimeType || "video/mp4"} />
+              </video>
+            </div>
+          ) : null}
 
           <div className="listing-params grid gap-x-8 gap-y-3 rounded-[4px] border border-line bg-surface p-6 sm:grid-cols-2">
             {params_.map(([label, value]) => (

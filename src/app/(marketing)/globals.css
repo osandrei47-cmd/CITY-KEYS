@@ -83,10 +83,22 @@ body {
     display: none !important;
   }
 
+  /* Явно фиксируем и ширину, и высоту плитки (а не только высоту, полагаясь
+     на неявную ширину grid-колонки) — иначе на некоторых печатных движках
+     фото разного исходного соотношения сторон обрезались по-разному и
+     сетка выглядела неровной. object-fit/object-position на самом <img>
+     прописаны отдельным правилом ниже — печатное правило должно быть
+     авторитетным независимо от классов Tailwind на элементе. */
   .listing-photos > * {
+    width: 100% !important;
+    height: 28mm !important;
+    max-height: 28mm !important;
     aspect-ratio: auto !important;
-    height: 28mm;
-    max-height: 28mm;
+  }
+
+  .listing-photos img {
+    object-fit: cover !important;
+    object-position: center !important;
   }
 
   /* break-inside — современный синоним page-break-inside, оставляем оба

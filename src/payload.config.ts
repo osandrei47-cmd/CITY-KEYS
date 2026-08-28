@@ -51,10 +51,23 @@ export default buildConfig({
     // Файлы медиа хранятся в Timeweb S3 (Object Storage), а не на диске
     // контейнера — тот пересоздаётся при каждом деплое и не даёт прав на
     // запись. disableLocalStorage выставляется плагином автоматически.
+    //
+    // clientUploads: true — загрузка идёт напрямую из браузера в S3 по
+    // presigned URL, минуя наш сервер целиком. Без этого файл сначала
+    // целиком летит в наш Next.js-контейнер на Timeweb App Platform, а тот
+    // уже сам заливает его в S3 — и именно на этом первом прыжке платформа
+    // (как и, например, Vercel — см. README пакета) режет запрос на каком-то
+    // лимите тела запроса. Ровно так падала загрузка видео 13.3 МБ в поле
+    // Media у Listings ("Failed to save 1 files") — сама Payload-загрузка
+    // (mimeType, sharp, запись в S3) при этом полностью рабочая, проверено
+    // локально через Local API тем же файлом. Требует CORS PUT на бакете
+    // для origin сайта — настроено отдельным скриптом (см. историю коммитов),
+    // не через код конфигурации.
     s3Storage({
       collections: {
         media: true,
       },
+      clientUploads: true,
       bucket: process.env.S3_BUCKET || "",
       config: {
         credentials: {
