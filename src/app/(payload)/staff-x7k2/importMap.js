@@ -26,9 +26,13 @@ import { LeadListingPreview as LeadListingPreview_cbb3ffb1e6105e15c99d4c569a3b02
 import { DealStageCell as DealStageCell_a1640f1520fd7ce00dece2d9e2b33cea } from '@/components/admin/DealStageCell'
 import { TaskDueDateCell as TaskDueDateCell_ee06fa1a2ac6da43b879c9faf24bf10a } from '@/components/admin/TaskDueDateCell'
 import { TaskDoneCell as TaskDoneCell_eafcef2af4c858decafd92361d0d6291 } from '@/components/admin/TaskDoneCell'
+import { DealPipelineStageCell as DealPipelineStageCell_6b7405cb4ebd39723d09586ec1442a1f } from '@/components/admin/DealPipelineStageCell'
+import { ChecklistLinkField as ChecklistLinkField_2053d414a569718cc32dbdb5aa551d0a } from '@/components/admin/ChecklistLinkField'
 import { KanbanNavLink as KanbanNavLink_059414ba1e303dff73d2e8ef5ae8160d } from '@/components/admin/KanbanNavLink'
+import { DealsKanbanNavLink as DealsKanbanNavLink_408baed5e38f2a960c9b4f1219e20348 } from '@/components/admin/DealsKanbanNavLink'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { KanbanView as KanbanView_035d1a3a9e0640cd29f3f1da2e837d33 } from '@/components/admin/KanbanView'
+import { DealsKanbanView as DealsKanbanView_f991798d6bb0e1613c30250d06a81f1d } from '@/components/admin/DealsKanbanView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -61,8 +65,12 @@ export const importMap = {
   "@/components/admin/DealStageCell#DealStageCell": DealStageCell_a1640f1520fd7ce00dece2d9e2b33cea,
   "@/components/admin/TaskDueDateCell#TaskDueDateCell": TaskDueDateCell_ee06fa1a2ac6da43b879c9faf24bf10a,
   "@/components/admin/TaskDoneCell#TaskDoneCell": TaskDoneCell_eafcef2af4c858decafd92361d0d6291,
+  "@/components/admin/DealPipelineStageCell#DealPipelineStageCell": DealPipelineStageCell_6b7405cb4ebd39723d09586ec1442a1f,
+  "@/components/admin/ChecklistLinkField#ChecklistLinkField": ChecklistLinkField_2053d414a569718cc32dbdb5aa551d0a,
   "@/components/admin/KanbanNavLink#KanbanNavLink": KanbanNavLink_059414ba1e303dff73d2e8ef5ae8160d,
+  "@/components/admin/DealsKanbanNavLink#DealsKanbanNavLink": DealsKanbanNavLink_408baed5e38f2a960c9b4f1219e20348,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/components/admin/KanbanView#KanbanView": KanbanView_035d1a3a9e0640cd29f3f1da2e837d33,
+  "@/components/admin/DealsKanbanView#DealsKanbanView": DealsKanbanView_f991798d6bb0e1613c30250d06a81f1d,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
