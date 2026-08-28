@@ -100,22 +100,50 @@ body {
      на /katalog/obyekt/12 (1 фото + описание + 8 полей характеристик)
      145mm-плитка вместе с описанием уже не помещаются на один лист,
      поэтому для объектов с описанием — правило ниже возвращает более
-     компактные 120mm (тот же размер, что уже проверен как безопасный
-     универсально, включая длинные двустрочные заголовки). */
-  .listing-photos:has(> :only-child) {
-    grid-template-columns: minmax(0, 145mm) !important;
+     компактные 100mm.
+
+     ВАЖНО: модификаторы (listing-photos--one/--two/--has-description)
+     навешиваются на сервере по числу фото (см. katalog/obyekt/[id]/page.tsx),
+     а не вычисляются в CSS через :has(). Первая версия была на :has() —
+     на реальном проде (next build --webpack, проверено печатью на
+     /katalog/obyekt/21) :has() внутри @media print не матчился вообще:
+     плитка оставалась мелкой (~74×74mm, обрезанное фото без всякого
+     aspect-ratio), хотя при локальной проверке через dev-сервер
+     (Turbopack) те же правила рендерились верно — судя по всему,
+     печатный движок не переоценивает "живые" :has()-селекторы при входе
+     в print-медиа. Обычные классы этого не требуют — надёжнее. Ширина и
+     высота плитки заданы явно в mm (не через aspect-ratio) — тот же
+     приём, что уже спас печать от похожего расхождения в 5231b66. */
+  .listing-photos.listing-photos--one {
+    grid-template-columns: 145mm !important;
   }
 
-  .listing-photos:has(> :nth-child(2):last-child) {
-    grid-template-columns: repeat(2, minmax(0, 85mm)) !important;
+  .listing-photos.listing-photos--one > * {
+    height: 108.75mm !important;
   }
 
-  .listing-print-stack:has(> p.print-only) .listing-photos:has(> :only-child) {
-    grid-template-columns: minmax(0, 100mm) !important;
+  .listing-photos.listing-photos--two {
+    grid-template-columns: repeat(2, 85mm) !important;
   }
 
-  .listing-print-stack:has(> p.print-only) .listing-photos:has(> :nth-child(2):last-child) {
-    grid-template-columns: repeat(2, minmax(0, 65mm)) !important;
+  .listing-photos.listing-photos--two > * {
+    height: 63.75mm !important;
+  }
+
+  .listing-photos.listing-photos--one.listing-photos--has-description {
+    grid-template-columns: 100mm !important;
+  }
+
+  .listing-photos.listing-photos--one.listing-photos--has-description > * {
+    height: 75mm !important;
+  }
+
+  .listing-photos.listing-photos--two.listing-photos--has-description {
+    grid-template-columns: repeat(2, 65mm) !important;
+  }
+
+  .listing-photos.listing-photos--two.listing-photos--has-description > * {
+    height: 48.75mm !important;
   }
 
   .listing-photos > :nth-child(n + 5) {

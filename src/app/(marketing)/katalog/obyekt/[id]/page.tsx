@@ -163,10 +163,25 @@ export default async function ListingPage({
             </div>
           </div>
 
+          {/* Модификаторы по числу фото/наличию описания — раньше это решалось
+              чисто в CSS через :has() (см. globals.css), но на реальном
+              проде (проверено печатью на /katalog/obyekt/21) :has() внутри
+              @media print не матчился — плитка оставалась мелкой, хотя
+              локальная dev-сборка (Turbopack) рендерила верно. Похоже на
+              баг конкретно печатного движка с "живыми" :has()-селекторами
+              внутри print-медиа. Считаем количество фото на сервере и
+              навешиваем обычные классы — надёжнее любых :has()-трюков. */}
           {photos.length ? (
             <PhotoLightbox
               photos={photos}
-              containerClassName="listing-photos grid gap-3 md:grid-cols-2"
+              containerClassName={[
+                "listing-photos grid gap-3 md:grid-cols-2",
+                photos.length === 1 ? "listing-photos--one" : "",
+                photos.length === 2 ? "listing-photos--two" : "",
+                printDescription ? "listing-photos--has-description" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               sizes="(min-width: 768px) 50vw, 100vw"
               fallbackAlt={listing.title}
             />
