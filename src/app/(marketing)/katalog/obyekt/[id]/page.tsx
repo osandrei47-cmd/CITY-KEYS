@@ -235,12 +235,14 @@ export default async function ListingPage({
 
           {/* Показывается только при печати (см. .print-only в globals.css) —
               чтобы у распечатанного/сохранённого в PDF листа были контакты
-              агентства, даже если его показали не с телефона у сайта. */}
-          <div className="print-only border-t border-line pt-4">
-            <p className="font-semibold">Андрей Осипов — CITY KEYS</p>
-            <p>{contacts.phone}</p>
-            <p>city-keys.ru</p>
-          </div>
+              агентства, даже если его показали не с телефона у сайта. Одна
+              строка вместо трёх — после перехода плиток фото на
+              aspect-ratio: 4/3 (см. globals.css, коммит 8b67b4f) место на
+              листе стало более впритык, три строки контактов местами уводили
+              блок на второй лист. */}
+          <p className="print-only border-t border-line pt-4">
+            Андрей Осипов — CITY KEYS · {contacts.phone} · city-keys.ru
+          </p>
         </div>
       </Container>
     </Section>
