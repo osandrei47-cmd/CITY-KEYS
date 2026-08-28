@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { ChecklistItems } from "./ChecklistItems";
 
 type ChecklistData = {
@@ -11,19 +11,42 @@ type ChecklistData = {
   items: { name: string; received: boolean; comment: string | null }[];
 };
 
+// +7 предзаполнен и не удаляется руками (см. handlePhoneChange) — участнику
+// остаётся только дописать оставшиеся цифры, курсор при заходе на страницу
+// сразу стоит после префикса (см. useEffect ниже).
+const PHONE_PREFIX = "+7 ";
+
 // Токен из URL — не единственная проверка. Пока телефон не подтверждён,
 // данные сделки не отрисованы на странице (verify их вообще не отдаёт при
 // несовпадении) — форма ниже единственный путь к содержимому чек-листа.
 export function ChecklistGate({ token }: { token: string }) {
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(PHONE_PREFIX);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const [verifiedPhone, setVerifiedPhone] = useState<string | null>(null);
   const [data, setData] = useState<ChecklistData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const el = phoneInputRef.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, []);
+
+  function handlePhoneChange(e: ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    // Не даём стереть/испортить префикс — если пользователь его удалил
+    // (например, выделил всё и начал печатать заново), просто
+    // восстанавливаем "+7 " и считаем это пустым вводом.
+    setPhone(value.startsWith("+7") ? value : PHONE_PREFIX);
+  }
+
+  const hasDigitsAfterPrefix = phone.trim().length > PHONE_PREFIX.trim().length;
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!phone.trim()) return;
+    if (!hasDigitsAfterPrefix) return;
     setLoading(true);
     setError(null);
     try {
@@ -68,18 +91,18 @@ export function ChecklistGate({ token }: { token: string }) {
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
+          ref={phoneInputRef}
           type="tel"
           inputMode="tel"
           autoComplete="tel"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+7 900 000-00-00"
+          onChange={handlePhoneChange}
           className="rounded-[3px] border border-line bg-surface px-4 py-3 text-[15px] text-ink outline-none focus-visible:border-accent"
         />
         {error ? <p className="text-[13.5px] text-red-500">{error}</p> : null}
         <button
           type="submit"
-          disabled={loading || !phone.trim()}
+          disabled={loading || !hasDigitsAfterPrefix}
           className="inline-flex items-center justify-center rounded-[3px] bg-accent px-6 py-3 text-[14px] font-bold text-accent-ink transition-colors hover:bg-[#e3ac6c] disabled:opacity-50"
         >
           {loading ? "Проверяем..." : "Показать чек-лист"}
