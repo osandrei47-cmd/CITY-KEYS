@@ -300,6 +300,10 @@ export interface Project {
   slug: string;
   coverPhoto: number | Media;
   /**
+   * Фото для блока «Территория» на вручную свёрстанной странице проекта (напр. /proekty/luga-park): дороги, электричество, вид на реку. Порядок — как в списке. Для проектов без своей страницы не используется.
+   */
+  gallery?: (number | Media)[] | null;
+  /**
    * 1-2 предложения для карточки в каталоге /proekty
    */
   shortDescription: string;
@@ -951,6 +955,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   coverPhoto?: T;
+  gallery?: T;
   shortDescription?: T;
   status?: T;
   metric?: T;

@@ -71,31 +71,33 @@ async function main() {
     limit: 1,
   });
 
+  // Текстовые поля карточки — скрипт остаётся источником правды для этой
+  // записи, поэтому при повторном запуске они тоже приводятся к актуальным.
+  const copy = {
+    title: "Луга Парк",
+    shortDescription:
+      "Коттеджный посёлок вблизи реки Луга у д. Новое Куземкино: участки ИЖС от 12,5 соток, готовая инфраструктура. 1-я очередь в продаже.",
+    status: "sale" as const,
+    metric: "Участки от 820 000 ₽",
+    isPublished: true,
+  };
+
   if (existing.docs.length) {
     const project = existing.docs[0];
     const updated = await payload.update({
       collection: "projects",
       id: project.id,
-      data: { coverPhoto },
+      data: { ...copy, coverPhoto },
     });
     console.log(
-      `Проект «Луга Парк» уже был (id=${updated.id}) — обложка обновлена на "${coverFilename}" (media id=${coverPhoto}).`,
+      `Проект «Луга Парк» уже был (id=${updated.id}) — обложка и тексты обновлены (обложка "${coverFilename}", media id=${coverPhoto}).`,
     );
     return;
   }
 
   const created = await payload.create({
     collection: "projects",
-    data: {
-      title: "Луга Парк",
-      slug: "luga-park",
-      coverPhoto,
-      shortDescription:
-        "Коттеджный посёлок на берегу реки Луга у д. Новое Куземкино: участки ИЖС от 12,5 соток, 50 метров до реки, готовая инфраструктура. 1-я очередь в продаже.",
-      status: "sale",
-      metric: "Участки от 820 000 ₽",
-      isPublished: true,
-    },
+    data: { ...copy, slug: "luga-park", coverPhoto },
   });
 
   console.log(`Создан проект «${created.title}» (id=${created.id}), обложка: ${coverFilename}`);

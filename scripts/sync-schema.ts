@@ -69,6 +69,10 @@ async function main() {
     ["listings", "badge"],
     ["leads", "interest_type"],
     ["listings", "project_id"],
+    // Projects.gallery — hasMany upload → таблица связей projects_rels
+    // (колонка media_id, path='gallery'). Одиночный coverPhoto по-прежнему
+    // прямая колонка projects.cover_photo_id, её тут не проверяем.
+    ["projects_rels", "media_id"],
   ];
 
   let allOk = true;
@@ -78,20 +82,35 @@ async function main() {
     console.log(`  ${ok ? "✅" : "❌"} ${table}.${column}`);
   }
 
-  // Функциональная проверка: заставляем Payload собрать и выполнить SQL,
-  // который трогает project_id. Если колонки нет — бросит ту же ошибку
-  // "column listings.project_id does not exist", что валила next build.
-  try {
-    await payload.find({
-      collection: "listings",
-      where: { project: { exists: false } },
-      limit: 1,
-      depth: 0,
-    });
-    console.log("  ✅ payload.find по полю project отрабатывает");
-  } catch (error) {
-    allOk = false;
-    console.log(`  ❌ payload.find по полю project упал: ${error instanceof Error ? error.message : String(error)}`);
+  // Функциональные проверки: заставляем Payload собрать и выполнить SQL,
+  // который трогает новые поля. Если чего-то нет — бросит ту же ошибку
+  // "column ... does not exist", что валила next build.
+  const probes: Array<[string, () => Promise<unknown>]> = [
+    [
+      "listings.project",
+      () =>
+        payload.find({
+          collection: "listings",
+          where: { project: { exists: false } },
+          limit: 1,
+          depth: 0,
+        }),
+    ],
+    [
+      "projects.gallery",
+      () => payload.find({ collection: "projects", limit: 1, depth: 1 }),
+    ],
+  ];
+  for (const [label, run] of probes) {
+    try {
+      await run();
+      console.log(`  ✅ payload.find по ${label} отрабатывает`);
+    } catch (error) {
+      allOk = false;
+      console.log(
+        `  ❌ payload.find по ${label} упал: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   console.log(

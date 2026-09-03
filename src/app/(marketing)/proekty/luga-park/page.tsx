@@ -7,12 +7,14 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { StatRow } from "@/components/ui/stat";
 import { ComingSoonNote } from "@/components/ui/coming-soon-note";
 import { PhotoPlaceholder } from "@/components/ui/photo-placeholder";
+import { PhotoLightbox } from "@/components/ui/photo-lightbox";
 import { LugaParkForm } from "@/components/luga-park/luga-park-form";
 import { LugaParkLotCard } from "@/components/luga-park/lot-card";
 import { getPayloadClient } from "@/lib/payload-client";
 import { contacts } from "@/lib/nav";
 import { LUGA_PARK_LOTS, LUGA_PARK_PROJECT_SLUG } from "@/lib/luga-park";
 import { lugaParkPresentationExists } from "@/lib/luga-park-s3";
+import { lugaParkVideoExists, lugaParkVideoUrl } from "@/lib/luga-park-video";
 import { isMediaDoc } from "@/lib/listing-types";
 import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
 import { buildLugaParkJsonLd } from "@/lib/structured-data";
@@ -22,9 +24,9 @@ import type { Listing, Project } from "@/payload-types";
 export const dynamic = "force-dynamic";
 
 const TITLE =
-  "Луга Парк — коттеджный посёлок у реки Луга, участки ИЖС от 820 000 ₽ | CITY KEYS";
+  "Луга Парк — коттеджный посёлок вблизи реки Луга, участки ИЖС от 820 000 ₽ | CITY KEYS";
 const DESCRIPTION =
-  "Продажа участков ИЖС в коттеджном посёлке Луга Парк, д. Новое Куземкино. 1-я очередь: от 12,5 соток, 50 метров до реки, рассрочка и ипотека.";
+  "Продажа участков ИЖС в коттеджном посёлке Луга Парк, д. Новое Куземкино. 1-я очередь: от 12,5 соток, вблизи реки Луга, рассрочка и ипотека.";
 
 // Обложку проекта (запись Projects, поле coverPhoto) переиспользуем и в
 // герое страницы, и в OG-картинке — редактируется в админке без правок кода.
@@ -93,7 +95,7 @@ const massifFacts = [
 ];
 
 const locationStats = [
-  { value: "50 метров", label: "до реки Луга", Icon: Waves },
+  { value: "Река Луга", label: "рядом с посёлком", Icon: Waves },
   { value: "25 км", label: "до порта Усть-Луга", Icon: Ship },
   { value: "20 км", label: "до ГПЗ и БХК", Icon: Factory },
 ];
@@ -111,7 +113,7 @@ const infrastructure = [
   },
   {
     title: "Окружение",
-    text: "Берег реки Луга, лес рядом, тихая деревня Новое Куземкино в стороне от трасс.",
+    text: "Вблизи реки Луга, лес по соседству, тихая деревня Новое Куземкино в стороне от трасс.",
     Icon: TreePine,
   },
 ];
@@ -152,13 +154,15 @@ async function getLotListings(): Promise<Map<string, Listing>> {
 }
 
 export default async function LugaParkPage() {
-  const [lotListings, hasPresentation, project] = await Promise.all([
+  const [lotListings, hasPresentation, hasVideo, project] = await Promise.all([
     getLotListings(),
     lugaParkPresentationExists(),
+    lugaParkVideoExists(),
     getLugaParkProject(),
   ]);
 
   const heroPhoto = project && isMediaDoc(project.coverPhoto) ? project.coverPhoto : null;
+  const gallery = (project?.gallery ?? []).filter(isMediaDoc);
   const zoneA = LUGA_PARK_LOTS.filter((lot) => lot.zone === "А").length;
   const zoneB = LUGA_PARK_LOTS.filter((lot) => lot.zone === "Б").length;
 
@@ -170,10 +174,10 @@ export default async function LugaParkPage() {
       <PageHero
         eyebrow="Коттеджный посёлок"
         title="Луга Парк"
-        subtitle="Закрытый посёлок на 500 сотках у д. Новое Куземкино. Готовая инфраструктура, участки от 12,5 соток, до реки — 50 метров. Участки ИЖС на берегу реки Луга — 1-я очередь в продаже."
+        subtitle="Закрытый посёлок на 500 сотках у д. Новое Куземкино, вблизи реки Луга. Готовая инфраструктура, участки от 12,5 соток. Участки ИЖС — 1-я очередь в продаже."
         photoSrc={heroPhoto?.url || undefined}
-        photoAlt={heroPhoto?.alt || "Коттеджный посёлок «Луга Парк» на берегу реки Луга"}
-        photoAssetHint="аэрофото массива «Луга Парк», берег реки Луга"
+        photoAlt={heroPhoto?.alt || "Коттеджный посёлок «Луга Парк» вблизи реки Луга"}
+        photoAssetHint="аэрофото массива «Луга Парк» вблизи реки Луга"
         ctas={[
           { label: "Смотреть участки 1-й очереди", href: "#lots" },
           { label: "Оставить заявку", href: "#contact", variant: "ghost" },
@@ -184,7 +188,7 @@ export default async function LugaParkPage() {
           stats={[
             { value: "500 соток", label: "общая площадь массива" },
             { value: "от 12,5 соток", label: "площадь участка" },
-            { value: "50 метров", label: "до реки Луга" },
+            { value: "6 лотов", label: "1-я очередь в продаже" },
           ]}
         />
       </Container>
@@ -193,7 +197,7 @@ export default async function LugaParkPage() {
       <Section>
         <Eyebrow>О массиве</Eyebrow>
         <h2 className="mt-3 max-w-[24ch] text-[20px] font-extrabold md:text-[24px]">
-          500 соток на берегу реки Луга, д. Новое Куземкино
+          500 соток вблизи реки Луга, д. Новое Куземкино
         </h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {massifFacts.map((fact) => (
@@ -300,31 +304,57 @@ export default async function LugaParkPage() {
       <Section>
         <Eyebrow>Территория</Eyebrow>
         <h2 className="mt-3 text-[20px] font-extrabold md:text-[24px]">Как выглядит посёлок</h2>
-        <p className="mt-3 text-[14px] text-ink-secondary">
-          Фото и видео с площадки добавим по мере готовности.
-        </p>
+        {gallery.length ? null : (
+          <p className="mt-3 text-[14px] text-ink-secondary">
+            Фото и видео с площадки добавим по мере готовности.
+          </p>
+        )}
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            "аэрофото массива, вид на реку Луга",
-            "берег реки Луга, 50 метров от участков",
-            "внутренние проезды, укатанный щебень",
-            "ЛЭП по границе участков",
-            "деревня Новое Куземкино, окружение",
-            "общий вид 1-й очереди",
-          ].map((hint) => (
-            <PhotoPlaceholder
-              key={hint}
-              className="aspect-[4/3] rounded-[4px] border border-line"
-              assetHint={hint}
+        {gallery.length ? (
+          <div className="mt-8">
+            <PhotoLightbox
+              photos={gallery}
+              containerClassName="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              sizes="(min-width: 768px) 33vw, 100vw"
+              fallbackAlt="Территория посёлка «Луга Парк»"
             />
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "аэрофото массива, вид на реку Луга",
+              "река Луга рядом с посёлком",
+              "внутренние проезды, укатанный щебень",
+              "ЛЭП по границе участков",
+              "деревня Новое Куземкино, окружение",
+              "общий вид 1-й очереди",
+            ].map((hint) => (
+              <PhotoPlaceholder
+                key={hint}
+                className="aspect-[4/3] rounded-[4px] border border-line"
+                assetHint={hint}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="mt-6">
-          <div className="flex aspect-video w-full items-center justify-center rounded-[4px] border-2 border-dashed border-line bg-surface text-[13px] text-ink-secondary">
-            Видео-обзор посёлка появится здесь
-          </div>
+          {hasVideo ? (
+            <div className="overflow-hidden rounded-[4px] border-2 border-accent bg-surface">
+              <video
+                controls
+                preload="none"
+                poster={heroPhoto?.url || undefined}
+                className="aspect-video w-full"
+              >
+                <source src={lugaParkVideoUrl()} type="video/mp4" />
+              </video>
+            </div>
+          ) : (
+            <div className="flex aspect-video w-full items-center justify-center rounded-[4px] border-2 border-dashed border-line bg-surface text-[13px] text-ink-secondary">
+              Видео-обзор посёлка появится здесь
+            </div>
+          )}
         </div>
       </Section>
 

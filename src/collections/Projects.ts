@@ -43,6 +43,17 @@ export const Projects: CollectionConfig = {
       required: true,
     },
     {
+      name: "gallery",
+      label: "Галерея (фото территории)",
+      type: "upload",
+      relationTo: "media",
+      hasMany: true,
+      admin: {
+        description:
+          "Фото для блока «Территория» на вручную свёрстанной странице проекта (напр. /proekty/luga-park): дороги, электричество, вид на реку. Порядок — как в списке. Для проектов без своей страницы не используется.",
+      },
+    },
+    {
       name: "shortDescription",
       label: "Краткое описание",
       type: "textarea",
