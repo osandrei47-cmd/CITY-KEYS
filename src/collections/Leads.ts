@@ -49,6 +49,18 @@ export const Leads: CollectionConfig = {
       type: "textarea",
     },
     {
+      // Заполняется только заявками с лендинга «Луга Парк» (source:
+      // "proekt-luga-park") — покупатель сам выбирает, для чего смотрит
+      // участок. У остальных источников поля нет — это нормально.
+      name: "interestType",
+      label: "Тип интереса",
+      type: "select",
+      options: [
+        { value: "personal", label: "Хочу для себя" },
+        { value: "investment", label: "Инвестиционная покупка" },
+      ],
+    },
+    {
       name: "notesPanel",
       label: "Заметки",
       type: "ui",

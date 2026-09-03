@@ -12,7 +12,7 @@
 //
 // Если верстаете новую страницу под проект — добавьте её slug сюда же,
 // в том же коммите, что и саму папку с page.tsx.
-export const HAND_BUILT_PROJECT_SLUGS: readonly string[] = ["ust-luga-izhs"];
+export const HAND_BUILT_PROJECT_SLUGS: readonly string[] = ["ust-luga-izhs", "luga-park"];
 
 export function hasHandBuiltProjectPage(slug: string): boolean {
   return HAND_BUILT_PROJECT_SLUGS.includes(slug);

@@ -127,6 +127,33 @@ export function buildUstLugaIzhsJsonLd() {
   };
 }
 
+// Коттеджный посёлок «Луга Парк» — розничная продажа лотов 1-й очереди с
+// диапазоном цен (от 820 000 ₽ за участок типа А до 1 750 000 ₽ за участок
+// типа Б с электричеством). AggregateOffer с lowPrice/highPrice — штатный
+// способ schema.org выразить диапазон, как и на /proekty/ust-luga-izhs.
+export function buildLugaParkJsonLd() {
+  const url = `${SITE_URL}/proekty/luga-park`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: "Коттеджный посёлок «Луга Парк» — участки ИЖС на берегу реки Луга",
+    description:
+      "Продажа участков ИЖС в коттеджном посёлке «Луга Парк», д. Новое Куземкино. 1-я очередь: от 12,5 соток, 50 метров до реки, рассрочка и ипотека.",
+    image: `${SITE_URL}${DEFAULT_OG_IMAGE.url}`,
+    url,
+    brand: { "@type": "Organization", name: AGENCY_NAME },
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "RUB",
+      lowPrice: 820000,
+      highPrice: 1750000,
+      offerCount: 6,
+      url,
+      seller: { "@type": "RealEstateAgent", name: AGENCY_NAME },
+    },
+  };
+}
+
 export function buildBlogArticleJsonLd({
   post,
   url,

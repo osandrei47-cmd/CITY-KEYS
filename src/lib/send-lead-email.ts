@@ -38,6 +38,9 @@ export async function sendLeadNotification(lead: Lead): Promise<void> {
     lead.listing && typeof lead.listing === "object"
       ? `Объект: ${lead.listing.title} — ${formatPrice(lead.listing.price)}`
       : null,
+    lead.interestType
+      ? `Тип интереса: ${lead.interestType === "investment" ? "Инвестиционная покупка" : "Хочу для себя"}`
+      : null,
     lead.message ? `Сообщение: ${lead.message}` : null,
     `Дата и время: ${formatDate(new Date(lead.createdAt))}`,
   ].filter(Boolean);

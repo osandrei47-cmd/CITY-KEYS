@@ -250,6 +250,14 @@ export interface Listing {
    */
   droneVideo?: (number | null) | Media;
   status: 'for-sale' | 'reserved' | 'sold';
+  /**
+   * Показывается на карточке лота на странице посёлка «Луга Парк». Для обычных объектов каталога оставить пустым.
+   */
+  badge?: ('start' | 'last') | null;
+  /**
+   * Заполняется только для лотов, которые должны показываться на странице проекта в разделе «Проекты». На попадание объекта в общий каталог и фиды не влияет.
+   */
+  project?: (number | null) | Project;
   leads?: {
     docs?: (number | Lead)[];
     hasNextPage?: boolean;
@@ -281,6 +289,34 @@ export interface Listing {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  /**
+   * Латиницей, без пробелов — например «ust-luga-izhs». Страница проекта должна существовать по адресу /proekty/slug (создаётся разработчиком отдельно от карточки)
+   */
+  slug: string;
+  coverPhoto: number | Media;
+  /**
+   * 1-2 предложения для карточки в каталоге /proekty
+   */
+  shortDescription: string;
+  status: 'sale' | 'development' | 'completed';
+  /**
+   * Необязательно — короткий текст рядом со статусом на карточке, например «Доходность 18–22%»
+   */
+  metric?: string | null;
+  /**
+   * Выключите, если карточка проекта ещё не готова к публикации
+   */
+  isPublished?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "leads".
  */
 export interface Lead {
@@ -294,9 +330,11 @@ export interface Lead {
     | 'ipoteka-quiz'
     | 'katalog-obyekt'
     | 'proekt-ust-luga-izhs'
+    | 'proekt-luga-park'
     | 'zhk-presentation'
     | 'other';
   message?: string | null;
+  interestType?: ('personal' | 'investment') | null;
   notes?:
     | {
         text: string;
@@ -449,34 +487,6 @@ export interface DealChecklistLink {
    * Генерируется автоматически при сохранении — скопируйте ссылку и отправьте участнику вручную (WhatsApp/Telegram).
    */
   token?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "projects".
- */
-export interface Project {
-  id: number;
-  title: string;
-  /**
-   * Латиницей, без пробелов — например «ust-luga-izhs». Страница проекта должна существовать по адресу /proekty/slug (создаётся разработчиком отдельно от карточки)
-   */
-  slug: string;
-  coverPhoto: number | Media;
-  /**
-   * 1-2 предложения для карточки в каталоге /proekty
-   */
-  shortDescription: string;
-  status: 'sale' | 'development' | 'completed';
-  /**
-   * Необязательно — короткий текст рядом со статусом на карточке, например «Доходность 18–22%»
-   */
-  metric?: string | null;
-  /**
-   * Выключите, если карточка проекта ещё не готова к публикации
-   */
-  isPublished?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -813,6 +823,8 @@ export interface ListingsSelect<T extends boolean = true> {
   photos?: T;
   droneVideo?: T;
   status?: T;
+  badge?: T;
+  project?: T;
   leads?: T;
   dealType?: T;
   residentialComplex?: T;
@@ -842,6 +854,7 @@ export interface LeadsSelect<T extends boolean = true> {
   email?: T;
   source?: T;
   message?: T;
+  interestType?: T;
   notes?:
     | T
     | {
