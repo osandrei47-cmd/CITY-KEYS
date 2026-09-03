@@ -7,19 +7,32 @@
  * Нужен после добавления/изменения полей в src/collections/*. В проекте нет
  * файлов миграций — схема накатывается именно этим push-ом.
  *
- * По умолчанию берёт .env.local (dev, city_keys_dev). Для боевой базы —
- * положить рядом .env.prod.local с прод-DATABASE_URL / PAYLOAD_SECRET и
- * запускать так же; скрипт сам предпочтёт этот файл.
+ * Какую БД синхронизировать — определяется env-файлом:
+ *   npx tsx scripts/sync-schema.ts               # аргумента нет:
+ *       .env.prod.local если он есть (боевая), иначе .env.local (dev)
+ *   npx tsx scripts/sync-schema.ts .env.local        # явно dev
+ *   npx tsx scripts/sync-schema.ts .env.prod.local   # явно прод
  *
- * Запуск (Node 20.12+, из папки web/):
- *   npx tsx scripts/sync-schema.ts
+ * ВАЖНО: `next build` читает .env.local (city_keys_dev) — если рядом лежит
+ * .env.prod.local, вызов без аргумента синхронизирует ПРОД, а не dev, и
+ * локальная сборка всё равно упадёт. Для локальной сборки синхронизируйте
+ * dev явно: `npx tsx scripts/sync-schema.ts .env.local`.
  *
- * ВАЖНО: NODE_ENV не должен быть "production" — иначе push не сработает
+ * NODE_ENV не должен быть "production" — иначе push не сработает
  * (в проде Payload ждёт файлы миграций, которых тут нет).
  */
 import { existsSync } from "node:fs";
 
-const ENV_FILE = existsSync(".env.prod.local") ? ".env.prod.local" : ".env.local";
+const ENV_ARG = process.argv[2];
+const ENV_FILE = ENV_ARG
+  ? ENV_ARG
+  : existsSync(".env.prod.local")
+    ? ".env.prod.local"
+    : ".env.local";
+if (!existsSync(ENV_FILE)) {
+  console.error(`env-файл "${ENV_FILE}" не найден.`);
+  process.exit(1);
+}
 process.loadEnvFile(ENV_FILE);
 
 if (process.env.NODE_ENV === "production") {

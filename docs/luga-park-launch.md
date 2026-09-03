@@ -7,27 +7,33 @@
 
 Добавлены поля:
 
-- `Leads.interestType` (select: personal / investment) → колонка `leads.interest_type`
-- `Listings.badge` (select: start / last) → колонка `listings.badge`
+- `Leads.interestType` (select) → колонка `leads.interest_type`
+- `Listings.badge` (select) → колонка `listings.badge`
 - `Listings.project` (одиночная relationship → projects) → **прямая** FK-колонка
-  `listings.project_id` (не `listings_rels` — туда идут только hasMany/полиморфные
-  связи, ср. существующий `listings.residential_complex_id`)
+  `listings.project_id` (не `listings_rels`)
+- `Projects.gallery` (hasMany upload) → таблица связей **`projects_rels`**
+  (её раньше не было — у `projects` был только одиночный `coverPhoto`)
 
-Все три — аддитивные (nullable), drizzle push применяет их без запроса и
-без риска потери данных. Синхронизация:
+Все аддитивные, drizzle push применяет без запроса и без риска данных.
+Синхронизация — **явно указывая env-файл** (важно: `next build` всегда
+читает `.env.local`/dev, а скрипт без аргумента возьмёт `.env.prod.local`,
+если тот существует):
 
 ```
-# dev (city_keys_dev, из .env.local)
-npx tsx scripts/sync-schema.ts
+# dev (city_keys_dev) — нужно для локального next build
+npx tsx scripts/sync-schema.ts .env.local
 
-# боевая БД: положить web/.env.prod.local (прод DATABASE_URL + PAYLOAD_SECRET),
-# затем тот же скрипт — он сам предпочтёт .env.prod.local
-npx tsx scripts/sync-schema.ts
+# боевая БД
+npx tsx scripts/sync-schema.ts .env.prod.local
 ```
 
 Скрипт запускает Payload dev push (`pushDevSchema` — тот же механизм, что
-`next dev` при старте; в проекте нет файлов миграций) и проверяет, что все
-три колонки появились. `NODE_ENV` в шелле не должен быть `production`.
+`next dev` при старте; файлов миграций в проекте нет), проверяет колонки и
+`projects_rels`. `NODE_ENV` в шелле не должен быть `production`.
+
+**Обе базы** (dev и прод) должны быть синхронизированы на коммите с полем
+`gallery` — иначе `next build` падает на пререндере `/sitemap.xml`
+(`relation "projects_rels" does not exist`).
 
 Локально типы уже перегенерированы (`npm run generate:types`).
 
