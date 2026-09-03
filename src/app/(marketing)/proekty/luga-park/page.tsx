@@ -11,12 +11,13 @@ import { LugaParkForm } from "@/components/luga-park/luga-park-form";
 import { LugaParkLotCard } from "@/components/luga-park/lot-card";
 import { getPayloadClient } from "@/lib/payload-client";
 import { contacts } from "@/lib/nav";
-import { LUGA_PARK_LOTS } from "@/lib/luga-park";
+import { LUGA_PARK_LOTS, LUGA_PARK_PROJECT_SLUG } from "@/lib/luga-park";
 import { lugaParkPresentationExists } from "@/lib/luga-park-s3";
-import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { isMediaDoc } from "@/lib/listing-types";
+import { buildCanonical, buildOpenGraph, buildTwitter, DEFAULT_OG_IMAGE, type OgImage } from "@/lib/seo";
 import { buildLugaParkJsonLd } from "@/lib/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
-import type { Listing } from "@/payload-types";
+import type { Listing, Project } from "@/payload-types";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +26,48 @@ const TITLE =
 const DESCRIPTION =
   "Продажа участков ИЖС в коттеджном посёлке Луга Парк, д. Новое Куземкино. 1-я очередь: от 12,5 соток, 50 метров до реки, рассрочка и ипотека.";
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  openGraph: buildOpenGraph({ title: TITLE, description: DESCRIPTION, path: "/proekty/luga-park" }),
-  twitter: buildTwitter({ title: TITLE, description: DESCRIPTION }),
-  alternates: buildCanonical("/proekty/luga-park"),
-};
+// Обложку проекта (запись Projects, поле coverPhoto) переиспользуем и в
+// герое страницы, и в OG-картинке — редактируется в админке без правок кода.
+async function getLugaParkProject(): Promise<Project | null> {
+  try {
+    const payload = await getPayloadClient();
+    const { docs } = await payload.find({
+      collection: "projects",
+      where: { slug: { equals: LUGA_PARK_PROJECT_SLUG } },
+      depth: 1,
+      limit: 1,
+    });
+    return (docs[0] as unknown as Project | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const project = await getLugaParkProject();
+  const cover = project && isMediaDoc(project.coverPhoto) ? project.coverPhoto : null;
+  const image: OgImage = cover?.url
+    ? {
+        url: cover.url,
+        width: cover.width ?? undefined,
+        height: cover.height ?? undefined,
+        alt: cover.alt || "Коттеджный посёлок «Луга Парк»",
+      }
+    : DEFAULT_OG_IMAGE;
+
+  return {
+    title: TITLE,
+    description: DESCRIPTION,
+    openGraph: buildOpenGraph({
+      title: TITLE,
+      description: DESCRIPTION,
+      path: "/proekty/luga-park",
+      image,
+    }),
+    twitter: buildTwitter({ title: TITLE, description: DESCRIPTION, image }),
+    alternates: buildCanonical("/proekty/luga-park"),
+  };
+}
 
 const massifFacts = [
   {
@@ -116,11 +152,13 @@ async function getLotListings(): Promise<Map<string, Listing>> {
 }
 
 export default async function LugaParkPage() {
-  const [lotListings, hasPresentation] = await Promise.all([
+  const [lotListings, hasPresentation, project] = await Promise.all([
     getLotListings(),
     lugaParkPresentationExists(),
+    getLugaParkProject(),
   ]);
 
+  const heroPhoto = project && isMediaDoc(project.coverPhoto) ? project.coverPhoto : null;
   const zoneA = LUGA_PARK_LOTS.filter((lot) => lot.zone === "А").length;
   const zoneB = LUGA_PARK_LOTS.filter((lot) => lot.zone === "Б").length;
 
@@ -133,6 +171,8 @@ export default async function LugaParkPage() {
         eyebrow="Коттеджный посёлок"
         title="Луга Парк"
         subtitle="Закрытый посёлок на 500 сотках у д. Новое Куземкино. Готовая инфраструктура, участки от 12,5 соток, до реки — 50 метров. Участки ИЖС на берегу реки Луга — 1-я очередь в продаже."
+        photoSrc={heroPhoto?.url || undefined}
+        photoAlt={heroPhoto?.alt || "Коттеджный посёлок «Луга Парк» на берегу реки Луга"}
         photoAssetHint="аэрофото массива «Луга Парк», берег реки Луга"
         ctas={[
           { label: "Смотреть участки 1-й очереди", href: "#lots" },
