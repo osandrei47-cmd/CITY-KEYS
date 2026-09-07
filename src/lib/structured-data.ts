@@ -49,6 +49,18 @@ export function buildRealEstateAgentJsonLd() {
     },
     areaServed: AREA_SERVED,
     sameAs: [contacts.telegram, contacts.vk, contacts.whatsapp, contacts.max],
+    // Зарегистрированный товарный знак (Роспатент) — дополнительный сигнал
+    // о том, что бренд реальный и защищённый. identifier с PropertyValue —
+    // штатный способ schema.org повесить на организацию внешний номер.
+    brand: {
+      "@type": "Brand",
+      name: AGENCY_NAME,
+      identifier: {
+        "@type": "PropertyValue",
+        name: "Товарный знак, Роспатент",
+        value: "Свидетельство № 1252865",
+      },
+    },
     // aggregateRating сюда намеренно НЕ добавлен — см. объяснение в
     // сообщении коммита и в чате: рейтинги 5,0/Авито и 4,5/Яндекс взяты с
     // площадок, которые сайт не хостит и не может подтвердить перед

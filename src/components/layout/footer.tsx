@@ -8,7 +8,7 @@ export function Footer() {
       <Container className="grid gap-10 py-14 md:grid-cols-3">
         <div className="flex flex-col gap-3">
           <span className="font-sans text-[16px] font-extrabold tracking-tight">
-            CITY KEYS
+            CITY KEYS<span className="align-super text-[9px] font-bold">®</span>
           </span>
           <p className="text-[13px] leading-relaxed text-ink-secondary">
             {contacts.address}
@@ -52,9 +52,14 @@ export function Footer() {
       </Container>
 
       <Container className="border-t border-line py-6">
-        <p className="text-[11.5px] text-ink-secondary/70">
-          © CITY KEYS · ИП Осипов Андрей Владимирович · ИНН 470705914908 · ОГРНИП 317470400007509
-        </p>
+        <div className="flex flex-col gap-1.5 text-[11.5px] leading-relaxed text-ink-secondary/70">
+          <p>
+            © CITY KEYS · ИП Осипов Андрей Владимирович · ИНН 470705914908 · ОГРНИП 317470400007509
+          </p>
+          <p>
+            Товарный знак CITY KEYS зарегистрирован в Роспатенте, свидетельство № 1252865
+          </p>
+        </div>
       </Container>
     </footer>
   );

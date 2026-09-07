@@ -1,10 +1,37 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
 import { contacts } from "@/lib/nav";
+import { getPayloadClient } from "@/lib/payload-client";
 import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import type { Media } from "@/payload-types";
+
+export const revalidate = 3600;
+
+// Скан свидетельства на товарный знак грузится в коллекцию Media через
+// админку. Привязки по id нет (страница свёрстана вручную, без CMS-записи),
+// поэтому ищем по имени файла: загрузить с именем, содержащим эту строку
+// (например «city-keys-trademark-1252865.jpg»). Пока файла нет — блок с
+// текстом о регистрации показывается, картинка просто не рендерится.
+const TRADEMARK_SCAN_FILENAME_MATCH = "city-keys-trademark-1252865";
+
+async function getTrademarkScan(): Promise<Media | null> {
+  try {
+    const payload = await getPayloadClient();
+    const { docs } = await payload.find({
+      collection: "media",
+      where: { filename: { like: TRADEMARK_SCAN_FILENAME_MATCH } },
+      limit: 1,
+    });
+    const doc = docs[0] as Media | undefined;
+    return doc?.url ? doc : null;
+  } catch {
+    return null;
+  }
+}
 
 const TITLE = "О компании — CITY KEYS";
 const DESCRIPTION =
@@ -37,7 +64,9 @@ const practicalPoints = [
 
 const partners = ["Банк", "Банк", "Банк", "Страховая", "Страховая", "Банк"];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const trademarkScan = await getTrademarkScan();
+
   return (
     <>
       {/* Блок 1. Hero */}
@@ -137,13 +166,49 @@ export default function AboutPage() {
       {/* Блок 6. Официально */}
       <Section>
         <Eyebrow>Официально</Eyebrow>
-        <div className="mt-6 flex flex-col gap-1 text-[14px] leading-relaxed text-ink-secondary">
-          <p>Индивидуальный предприниматель Осипов Андрей Владимирович</p>
-          <p>Бренд CITY KEYS</p>
-          <p>ИНН 470705914908</p>
-          <p>ОГРНИП 317470400007509</p>
-          <p>Кингисепп, ул. Октябрьская, д.18а/14, БЦ «Волна», 2 эт., оф.1</p>
-          <p>E-mail: info@city-keys.ru</p>
+        <div className="mt-6 grid gap-10 md:grid-cols-[1.5fr_1fr] md:items-start">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-1 text-[14px] leading-relaxed text-ink-secondary">
+              <p>Индивидуальный предприниматель Осипов Андрей Владимирович</p>
+              <p>Бренд CITY KEYS</p>
+              <p>ИНН 470705914908</p>
+              <p>ОГРНИП 317470400007509</p>
+              <p>Кингисепп, ул. Октябрьская, д.18а/14, БЦ «Волна», 2 эт., оф.1</p>
+              <p>E-mail: info@city-keys.ru</p>
+            </div>
+
+            <div className="flex flex-col gap-2 rounded-[4px] border border-line bg-surface p-5">
+              <h3 className="text-[14.5px] font-bold">
+                Товарный знак CITY KEYS<span className="align-super text-[9px] font-bold">®</span>
+              </h3>
+              <p className="text-[13.5px] leading-relaxed text-ink-secondary">
+                Название и знак CITY KEYS зарегистрированы как товарный знак. Роспатент внёс
+                его в Государственный реестр товарных знаков 13 августа 2026 года —
+                свидетельство № 1252865, правообладатель Осипов Андрей Владимирович,
+                классы МКТУ 35 и 36 (реклама и маркетинг, услуги в сфере недвижимости).
+                Регистрация действует до 27 февраля 2036 года.
+              </p>
+            </div>
+          </div>
+
+          {trademarkScan ? (
+            <figure className="flex flex-col gap-2">
+              <Image
+                src={trademarkScan.url as string}
+                alt={
+                  trademarkScan.alt ||
+                  "Свидетельство Роспатента на товарный знак CITY KEYS № 1252865"
+                }
+                width={trademarkScan.width ?? 900}
+                height={trademarkScan.height ?? 1270}
+                sizes="(min-width: 768px) 33vw, 100vw"
+                className="h-auto w-full rounded-[4px] border border-line bg-surface"
+              />
+              <figcaption className="text-[12px] text-ink-secondary/80">
+                Свидетельство № 1252865, Роспатент
+              </figcaption>
+            </figure>
+          ) : null}
         </div>
       </Section>
 
