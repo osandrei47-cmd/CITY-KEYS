@@ -4,9 +4,11 @@ import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
+import { PartnerLogoGrid } from "@/components/ui/partner-logo-grid";
 import { contacts } from "@/lib/nav";
 import { getPayloadClient } from "@/lib/payload-client";
 import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { banks, insurers } from "@/lib/partner-logos";
 import type { Media } from "@/payload-types";
 
 export const revalidate = 3600;
@@ -61,8 +63,6 @@ const practicalPoints = [
   "Решения принимаются на месте, без согласований между отделами",
   "Личная ответственность за результат — не «агентство приносит извинения», а конкретный человек, который отвечает за сделку",
 ];
-
-const partners = ["Банк", "Банк", "Банк", "Страховая", "Страховая", "Банк"];
 
 export default async function AboutPage() {
   const trademarkScan = await getTrademarkScan();
@@ -147,20 +147,9 @@ export default async function AboutPage() {
       {/* Блок 5. Партнёры */}
       <Section>
         <Eyebrow>Партнёры</Eyebrow>
-        <div className="mt-6 grid grid-cols-3 gap-3 md:grid-cols-6">
-          {partners.map((p, i) => (
-            <div
-              key={i}
-              className="flex h-16 items-center justify-center rounded-[4px] border border-line bg-surface text-[11px] text-ink-secondary"
-            >
-              {p}
-            </div>
-          ))}
+        <div className="mt-6">
+          <PartnerLogoGrid partners={[...banks, ...insurers]} />
         </div>
-        <p className="mt-4 text-[12.5px] text-ink-secondary">
-          Логотипы банков и страховых компаний-партнёров подставим, как
-          только получим их в векторном виде.
-        </p>
       </Section>
 
       {/* Блок 6. Официально */}

@@ -4,7 +4,8 @@ import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
-import { PartnerLogoGrid, type Partner } from "@/components/ui/partner-logo-grid";
+import { PartnerLogoGrid } from "@/components/ui/partner-logo-grid";
+import { banks } from "@/lib/partner-logos";
 import { MortgageCalculator } from "@/components/ui/mortgage-calculator";
 import {
   IconPercent,
@@ -57,18 +58,6 @@ const compactPrograms = [
   { title: "Военная ипотека", Icon: IconStar },
   { title: "Вторичное жильё", Icon: IconKey },
   { title: "Рефинансирование", Icon: IconRefresh },
-];
-
-const banks: Partner[] = [
-  { name: "Сбербанк", src: "/images/banks/SBER_LOGO_RUS_H_COL_RGB-dlya-sayta.png" },
-  { name: "ВТБ", src: "/images/banks/2560px_VTB_Logo_2018.svg.png" },
-  { name: "Альфа-Банк", src: "/images/banks/Alfa-bank.png" },
-  { name: "Т-Банк", src: "/images/banks/T-Bank_RU_logo.svg.png" },
-  { name: "Газпромбанк", src: "/images/banks/img1993961_Gazprombank_upolnomochenyiy_RAO_GAZPROM.jpg" },
-  { name: "Совкомбанк", src: "/images/banks/logo-sovkombank.png" },
-  { name: "Россельхозбанк", src: "/images/banks/Логотип_Россельхозбанк.svg.png" },
-  { name: "ДОМ.РФ", src: "/images/banks/Domrf-Bank-Logo-Vector.svg-.png" },
-  { name: "Абсолют Банк", src: "/images/banks/absolut-bank.jpg" },
 ];
 
 const applicantDocuments = [

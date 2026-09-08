@@ -4,9 +4,10 @@ import { Section } from "@/components/layout/section";
 import { PageBannerHero } from "@/components/ui/page-banner-hero";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Button } from "@/components/ui/button";
-import { PartnerLogoGrid, type Partner } from "@/components/ui/partner-logo-grid";
+import { PartnerLogoGrid } from "@/components/ui/partner-logo-grid";
 import { IconShieldCheck, IconHouse, IconSteeringWheel, IconCarShield } from "@/components/ui/icons";
 import { contacts } from "@/lib/nav";
+import { insurers } from "@/lib/partner-logos";
 import { buildCanonical, buildOpenGraph, buildTwitter } from "@/lib/seo";
 
 const TITLE = "Страхование — CITY KEYS";
@@ -55,18 +56,6 @@ const compactInsurance = [
     text: "Подбор условий по вашему автомобилю среди партнёрских страховых компаний.",
     Icon: IconCarShield,
   },
-];
-
-const insurers: Partner[] = [
-  { name: "Ингосстрах", src: "/images/insurance/Ingosstrakh_New_Logo.svg.png" },
-  { name: "Ренессанс страхование", src: "/images/insurance/Logo_renessans.svg.png" },
-  { name: "Росгосстрах", src: "/images/insurance/RGS_logo_cmyk_Red.png" },
-  { name: "СОГАЗ", src: "/images/insurance/Логотип_компании_СОГАЗ.svg.png" },
-  { name: "РЕСО-Гарантия", src: "/images/insurance/Обновленный_логотип_РЕСО_-_2019.svg.png" },
-  { name: "АльфаСтрахование", src: "/images/insurance/1eb06969e32ca0c847fae8166fe7639c.jpg" },
-  { name: "Астро-Волга", src: "/images/insurance/3034cd01296f71564219310fa108657d.jpg" },
-  { name: "Югория", src: "/images/insurance/75a2e7cda9824ac27d35a8d7a26d3947_L.jpg" },
-  { name: "ВСК", src: "/images/insurance/gjm4oh5iaxb8j8892ddxcg70xgf1h0s1.jpg" },
 ];
 
 const faq = [
