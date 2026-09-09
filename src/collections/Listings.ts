@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { publishListingToVk } from "@/lib/vk";
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -14,6 +15,41 @@ export const Listings: CollectionConfig = {
     update: ({ req }) => req.user?.role === "admin",
     delete: ({ req }) => req.user?.role === "admin",
   },
+  endpoints: [
+    {
+      // Кнопка «Опубликовать в ВК» в карточке объекта — см.
+      // src/components/admin/VkPublishPanel.tsx и VkPublishButton.tsx.
+      path: "/:id/vk-publish",
+      method: "post",
+      handler: async (req) => {
+        if (req.user?.role !== "admin") {
+          return Response.json({ error: "Недостаточно прав" }, { status: 403 });
+        }
+
+        const id = req.routeParams?.id as string;
+        const listing = await req.payload
+          .findByID({ collection: "listings", id, depth: 1 })
+          .catch(() => null);
+        if (!listing) {
+          return Response.json({ error: "Объект не найден" }, { status: 404 });
+        }
+
+        try {
+          const { postId } = await publishListingToVk(listing);
+          const vkPublishedAt = new Date().toISOString();
+          await req.payload.update({
+            collection: "listings",
+            id,
+            data: { vkPublishedAt, vkPostId: String(postId) },
+          });
+          return Response.json({ ok: true, postId, vkPublishedAt });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Неизвестная ошибка VK API";
+          return Response.json({ error: message }, { status: 502 });
+        }
+      },
+    },
+  ],
   fields: [
     // ---------- Основное ----------
     {
@@ -242,6 +278,33 @@ export const Listings: CollectionConfig = {
         { label: "Забронирован", value: "reserved" },
         { label: "Продан / сдан", value: "sold" },
       ],
+    },
+
+    // ---------- Публикация в ВК ----------
+    // vkPublishedAt/vkPostId заполняются автоматически сервером после
+    // успешной публикации (см. endpoints выше) — руками их не редактируют,
+    // отсюда readOnly + hidden и отдельная панель с кнопкой (vkPublishPanel).
+    {
+      name: "vkPublishedAt",
+      label: "Опубликовано в ВК",
+      type: "date",
+      admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: "vkPostId",
+      label: "ID поста ВК",
+      type: "text",
+      admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: "vkPublishPanel",
+      label: "Публикация в ВК",
+      type: "ui",
+      admin: {
+        components: {
+          Field: "@/components/admin/VkPublishPanel#VkPublishPanel",
+        },
+      },
     },
     {
       // Маркетинговый бейдж на карточке лота (сейчас используется только на

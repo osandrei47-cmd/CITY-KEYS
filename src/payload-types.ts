@@ -250,6 +250,8 @@ export interface Listing {
    */
   droneVideo?: (number | null) | Media;
   status: 'for-sale' | 'reserved' | 'sold';
+  vkPublishedAt?: string | null;
+  vkPostId?: string | null;
   /**
    * Показывается на карточке лота на странице посёлка «Луга Парк». Для обычных объектов каталога оставить пустым.
    */
@@ -827,6 +829,8 @@ export interface ListingsSelect<T extends boolean = true> {
   photos?: T;
   droneVideo?: T;
   status?: T;
+  vkPublishedAt?: T;
+  vkPostId?: T;
   badge?: T;
   project?: T;
   leads?: T;
