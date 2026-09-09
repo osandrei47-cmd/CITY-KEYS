@@ -86,6 +86,10 @@ async function main() {
     // (колонка media_id, path='gallery'). Одиночный coverPhoto по-прежнему
     // прямая колонка projects.cover_photo_id, её тут не проверяем.
     ["projects_rels", "media_id"],
+    // Кнопка «Опубликовать в ВК» в карточке объекта (см. src/lib/vk.ts) —
+    // отметка о публикации, простые скалярные колонки на listings.
+    ["listings", "vk_published_at"],
+    ["listings", "vk_post_id"],
   ];
 
   let allOk = true;
