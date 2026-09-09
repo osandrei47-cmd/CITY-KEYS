@@ -5,14 +5,13 @@
 
 import {
   formatPrice,
-  isMediaDoc,
   propertyTypeLabels,
   richTextToPlainText,
   roomsLabels,
   truncateAtWord,
   type Listing,
 } from "@/lib/listing-types";
-import { absoluteUrl, listingUrl } from "@/lib/feed/helpers";
+import { listingUrl } from "@/lib/feed/helpers";
 
 const VK_API_VERSION = "5.199";
 const VK_API_BASE = "https://api.vk.com/method";
@@ -44,40 +43,48 @@ async function vkApi<T>(method: string, params: Record<string, string>): Promise
   return json.response as T;
 }
 
-// Двухшаговая загрузка фото для attachment поста на стене — см.
-// https://dev.vk.com/ru/method/photos.saveWallPhoto
-async function uploadWallPhoto(photoUrl: string): Promise<string> {
-  const { groupId } = getVkCredentials();
-
-  const uploadServer = await vkApi<{ upload_url: string }>("photos.getWallUploadServer", {
-    group_id: groupId,
-  });
-
-  const photoRes = await fetch(photoUrl);
-  if (!photoRes.ok) {
-    throw new Error(`Не удалось скачать фото объекта (${photoRes.status})`);
-  }
-  const photoBlob = await photoRes.blob();
-
-  const form = new FormData();
-  form.append("photo", photoBlob, "photo.jpg");
-
-  const uploadRes = await fetch(uploadServer.upload_url, { method: "POST", body: form });
-  const uploadJson = (await uploadRes.json()) as { photo?: string; server?: number; hash?: string };
-  if (!uploadJson.photo || uploadJson.photo === "[]") {
-    throw new Error("Сервер ВКонтакте не принял загруженное фото");
-  }
-
-  const saved = await vkApi<Array<{ id: number; owner_id: number }>>("photos.saveWallPhoto", {
-    group_id: groupId,
-    photo: uploadJson.photo,
-    server: String(uploadJson.server ?? ""),
-    hash: uploadJson.hash ?? "",
-  });
-
-  const photo = saved[0];
-  return `photo${photo.owner_id}_${photo.id}`;
-}
+// ВРЕМЕННО ОТКЛЮЧЕНО: двухшаговая загрузка фото для attachment поста на
+// стене (photos.getWallUploadServer + photos.saveWallPhoto, см.
+// https://dev.vk.com/ru/method/photos.saveWallPhoto). photos.getWallUploadServer
+// не работает с токеном сообщества, а получение токена пользователя теперь
+// требует отдельной верификации через VK ID — пока публикуем только
+// message со ссылкой на объект, ВК сам подтягивает превью по og:image
+// страницы (см. generateMetadata в katalog/obyekt/[id]/page.tsx). Если
+// решим доделать загрузку фото — раскомментировать и вернуть вызов в
+// publishListingToVk ниже.
+//
+// async function uploadWallPhoto(photoUrl: string): Promise<string> {
+//   const { groupId } = getVkCredentials();
+//
+//   const uploadServer = await vkApi<{ upload_url: string }>("photos.getWallUploadServer", {
+//     group_id: groupId,
+//   });
+//
+//   const photoRes = await fetch(photoUrl);
+//   if (!photoRes.ok) {
+//     throw new Error(`Не удалось скачать фото объекта (${photoRes.status})`);
+//   }
+//   const photoBlob = await photoRes.blob();
+//
+//   const form = new FormData();
+//   form.append("photo", photoBlob, "photo.jpg");
+//
+//   const uploadRes = await fetch(uploadServer.upload_url, { method: "POST", body: form });
+//   const uploadJson = (await uploadRes.json()) as { photo?: string; server?: number; hash?: string };
+//   if (!uploadJson.photo || uploadJson.photo === "[]") {
+//     throw new Error("Сервер ВКонтакте не принял загруженное фото");
+//   }
+//
+//   const saved = await vkApi<Array<{ id: number; owner_id: number }>>("photos.saveWallPhoto", {
+//     group_id: groupId,
+//     photo: uploadJson.photo,
+//     server: String(uploadJson.server ?? ""),
+//     hash: uploadJson.hash ?? "",
+//   });
+//
+//   const photo = saved[0];
+//   return `photo${photo.owner_id}_${photo.id}`;
+// }
 
 export function buildVkPostMessage(listing: Listing): string {
   const lines: string[] = [];
@@ -114,16 +121,15 @@ export async function publishListingToVk(
 ): Promise<{ postId: number; groupId: string }> {
   const { groupId } = getVkCredentials();
 
-  const coverPhoto = (listing.photos ?? []).find(isMediaDoc);
-  const attachment = coverPhoto?.url ? await uploadWallPhoto(absoluteUrl(coverPhoto.url)) : null;
-
+  // Фото не загружаем и не прикрепляем attachment'ом (см. комментарий у
+  // закомментированного uploadWallPhoto выше) — ссылка в message ниже
+  // сама разворачивается в превью по og:image страницы объекта.
   const message = buildVkPostMessage(listing);
 
   const result = await vkApi<{ post_id: number }>("wall.post", {
     owner_id: String(-Math.abs(Number(groupId))),
     from_group: "1",
     message,
-    ...(attachment ? { attachments: attachment } : {}),
   });
 
   return { postId: result.post_id, groupId };
