@@ -121,15 +121,19 @@ export async function publishListingToVk(
 ): Promise<{ postId: number; groupId: string }> {
   const { groupId } = getVkCredentials();
 
-  // Фото не загружаем и не прикрепляем attachment'ом (см. комментарий у
-  // закомментированного uploadWallPhoto выше) — ссылка в message ниже
-  // сама разворачивается в превью по og:image страницы объекта.
+  // Фото не загружаем и не прикрепляем photo-attachment'ом (см. комментарий
+  // у закомментированного uploadWallPhoto выше). Вместо этого саму ссылку
+  // передаём в attachments (не только в тексте) — так ВК распознаёт её как
+  // прикреплённый объект-ссылку и рисует под постом карточку-превью с
+  // og:title/og:description/og:image страницы, а не просто синий текст.
   const message = buildVkPostMessage(listing);
+  const url = listingUrl(listing);
 
   const result = await vkApi<{ post_id: number }>("wall.post", {
     owner_id: String(-Math.abs(Number(groupId))),
     from_group: "1",
     message,
+    attachments: url,
   });
 
   return { postId: result.post_id, groupId };
