@@ -121,19 +121,26 @@ export async function publishListingToVk(
 ): Promise<{ postId: number; groupId: string }> {
   const { groupId } = getVkCredentials();
 
-  // Фото не загружаем и не прикрепляем photo-attachment'ом (см. комментарий
-  // у закомментированного uploadWallPhoto выше). Вместо этого саму ссылку
-  // передаём в attachments (не только в тексте) — так ВК распознаёт её как
-  // прикреплённый объект-ссылку и рисует под постом карточку-превью с
-  // og:title/og:description/og:image страницы, а не просто синий текст.
+  // ПРОВЕРЕНО НАПРЯМУЮ через VK API (2026-09-09): передача ссылки на объект
+  // через attachments (без attachments это работает, см. комментарий у
+  // закомментированного uploadWallPhoto выше) стабильно возвращает ошибку
+  // "link_photo_sizing_rule. No photo given" — и это не связано с нашей
+  // страницей: та же ошибка воспроизводится на заведомо рабочей чужой
+  // странице (ru.wikipedia.org) и на прямой ссылке на файл картинки.
+  // Причина — жёсткое ограничение VK API для токена СООБЩЕСТВА: как и
+  // photos.getWallUploadServer (падает с "method is unavailable with group
+  // auth"), автоген превью по ссылке в attachments токену сообщества
+  // недоступен ни в каком виде. Нужен user-токен админа группы (VK ID)
+  // с правами wall+photos — тогда можно будет вернуть либо загрузку фото,
+  // либо attachments-ссылку. До тех пор — только текст со ссылкой внутри
+  // message, без attachments (иначе wall.post падает с ошибкой на каждый
+  // вызов).
   const message = buildVkPostMessage(listing);
-  const url = listingUrl(listing);
 
   const result = await vkApi<{ post_id: number }>("wall.post", {
     owner_id: String(-Math.abs(Number(groupId))),
     from_group: "1",
     message,
-    attachments: url,
   });
 
   return { postId: result.post_id, groupId };
