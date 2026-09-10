@@ -115,8 +115,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'vk-oauth': VkOauth;
+  };
+  globalsSelect: {
+    'vk-oauth': VkOauthSelect<false> | VkOauthSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -1076,6 +1080,37 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vk-oauth".
+ */
+export interface VkOauth {
+  id: number;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  /**
+   * Выдаётся VK при первой авторизации (шаг 4 их флоу) и должен оставаться неизменным во всех последующих refresh-запросах — не путать со state, который каждый раз новый.
+   */
+  deviceId?: string | null;
+  expiresAt?: string | null;
+  scope?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vk-oauth_select".
+ */
+export interface VkOauthSelect<T extends boolean = true> {
+  accessToken?: T;
+  refreshToken?: T;
+  deviceId?: T;
+  expiresAt?: T;
+  scope?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

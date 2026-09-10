@@ -90,6 +90,10 @@ async function main() {
     // отметка о публикации, простые скалярные колонки на listings.
     ["listings", "vk_published_at"],
     ["listings", "vk_post_id"],
+    // Глобал vk-oauth (src/globals/VkOAuth.ts) — хранилище VK ID
+    // access_token/refresh_token для публикации от имени админа группы.
+    ["vk_oauth", "access_token"],
+    ["vk_oauth", "device_id"],
   ];
 
   let allOk = true;

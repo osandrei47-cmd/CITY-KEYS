@@ -19,6 +19,7 @@ import { ResidentialComplexes } from "./collections/ResidentialComplexes";
 import { Projects } from "./collections/Projects";
 import { BlogPosts } from "./collections/BlogPosts";
 import { Services } from "./collections/Services";
+import { VkOAuth } from "./globals/VkOAuth";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -66,6 +67,7 @@ export default buildConfig({
     BlogPosts,
     Services,
   ],
+  globals: [VkOAuth],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   plugins: [

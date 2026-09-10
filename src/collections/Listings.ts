@@ -35,7 +35,7 @@ export const Listings: CollectionConfig = {
         }
 
         try {
-          const { postId } = await publishListingToVk(listing);
+          const { postId } = await publishListingToVk(listing, req.payload);
           const vkPublishedAt = new Date().toISOString();
           await req.payload.update({
             collection: "listings",
