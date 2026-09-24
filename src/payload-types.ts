@@ -285,6 +285,69 @@ export interface Listing {
   publishCian?: boolean | null;
   publishDomclick?: boolean | null;
   publishYandex?: boolean | null;
+  /**
+   * Уточняет уже существующее поле «Цена, ₽» выше — само значение цены не меняет
+   */
+  rentalPeriod?: ('month' | 'year') | null;
+  minRentalTerm?: number | null;
+  utilitiesIncluded?: boolean | null;
+  /**
+   * Сумма залога (например «60 000 ₽») или «Без залога» — свободный текст, т.к. у объектов разный формат условий
+   */
+  rentalDeposit?: string | null;
+  /**
+   * Обязательно для коммерческой недвижимости. ВАЖНО: проверка обязательности смотрит на «Тип недвижимости» из текущей формы — при точечном обновлении через API/скрипты, где в запросе нет поля propertyType, проверка не сработает (это ограничение Payload, не наше решение); через админку сохраняется всегда весь документ, там защита работает.
+   */
+  commercialCategory?:
+    | (
+        | 'auto repair'
+        | 'business'
+        | 'free purpose'
+        | 'hotel'
+        | 'land'
+        | 'manufacturing'
+        | 'office'
+        | 'public catering'
+        | 'retail'
+        | 'warehouse'
+      )
+    | null;
+  rentalType?: ('direct' | 'sublease') | null;
+  /**
+   * Не путать с полем «Тип дома» в блоке «Служебное» выше (материал стен для жилых объектов) — здесь тип здания для коммерции. Варианты — ровно список из официальной документации Яндекс.Недвижимости (commercial-building-type), подобраны так, чтобы однозначно мапиться в фид без потери смысла; отдельно стоящее административное или производственное здание — тоже «Отдельно стоящее здание»
+   */
+  commercialBuildingType?:
+    ('business-center' | 'shopping-center' | 'detached-building' | 'residential-building' | 'warehouse') | null;
+  distanceFromRoad?: ('first-line' | 'second-line') | null;
+  parking?: ('none' | 'street' | 'indoor') | null;
+  ceilingHeight?: number | null;
+  electricalPower?: number | null;
+  finishType?: ('none' | 'finished' | 'office') | null;
+  /**
+   * Не путать с чекбоксом «Отопление» в блоке «Коммуникации» ниже (тот — бинарный признак для домов/дач/участков)
+   */
+  heating?: ('none' | 'central' | 'autonomous') | null;
+  rentalHolidays?: boolean | null;
+  operatingExpensesIncluded?: boolean | null;
+  multiFloor?: boolean | null;
+  partialRentAllowed?: boolean | null;
+  commissionSharing?: boolean | null;
+  vatIncluded?: boolean | null;
+  businessCenterClass?: ('A' | 'A+' | 'B' | 'B+' | 'C' | 'C+') | null;
+  /**
+   * Например «Невский 38» — название бизнес- или торгового центра
+   */
+  buildingName?: string | null;
+  buildYear?: number | null;
+  hasInternet?: boolean | null;
+  hasVentilation?: boolean | null;
+  hasFireAlarm?: boolean | null;
+  hasAirConditioner?: boolean | null;
+  hasFurniture?: boolean | null;
+  /**
+   * У Яндекса нет отдельного тега для этого признака — при включении добавляет значение «legal address» к перечню назначений объекта (тег commercial-type), см. комментарий в yandex.ts
+   */
+  legalAddressProvided?: boolean | null;
   gasSupply?: boolean | null;
   waterSupply?: boolean | null;
   sewerageSupply?: boolean | null;
@@ -848,6 +911,34 @@ export interface ListingsSelect<T extends boolean = true> {
   publishCian?: T;
   publishDomclick?: T;
   publishYandex?: T;
+  rentalPeriod?: T;
+  minRentalTerm?: T;
+  utilitiesIncluded?: T;
+  rentalDeposit?: T;
+  commercialCategory?: T;
+  rentalType?: T;
+  commercialBuildingType?: T;
+  distanceFromRoad?: T;
+  parking?: T;
+  ceilingHeight?: T;
+  electricalPower?: T;
+  finishType?: T;
+  heating?: T;
+  rentalHolidays?: T;
+  operatingExpensesIncluded?: T;
+  multiFloor?: T;
+  partialRentAllowed?: T;
+  commissionSharing?: T;
+  vatIncluded?: T;
+  businessCenterClass?: T;
+  buildingName?: T;
+  buildYear?: T;
+  hasInternet?: T;
+  hasVentilation?: T;
+  hasFireAlarm?: T;
+  hasAirConditioner?: T;
+  hasFurniture?: T;
+  legalAddressProvided?: T;
   gasSupply?: T;
   waterSupply?: T;
   sewerageSupply?: T;

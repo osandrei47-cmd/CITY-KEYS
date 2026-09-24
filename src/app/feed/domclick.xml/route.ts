@@ -3,6 +3,12 @@
 // Яндекс.Недвижимости — переиспользуем тот же генератор. Когда будет
 // доступ к партнёрскому кабинету Домклика — стоит свериться и при
 // необходимости перейти на нативную схему.
+//
+// target="domclick" переключает пару отличий от чистого Яндекса — сейчас
+// это только залог (<rent-pledge-amount> в дополнение к <rent-pledge>,
+// см. disclaimer в src/lib/feed/yandex.ts): по скриншотам их формы
+// ручного размещения залог — сумма, а не да/нет, но сама XML-схема
+// Домклика не проверялась, так что это предположение, а не факт.
 
 import { getPayloadClient } from "@/lib/payload-client";
 import { platformListingsWhere } from "@/lib/feed/helpers";
@@ -20,7 +26,7 @@ export async function GET() {
     limit: 1000,
   });
 
-  const xml = buildYandexFeedXml(docs as unknown as Listing[]);
+  const xml = buildYandexFeedXml(docs as unknown as Listing[], "domclick");
 
   return new Response(xml, {
     headers: { "Content-Type": "application/xml; charset=utf-8" },

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { publishListingToVk } from "@/lib/vk";
+import type { Listing } from "@/payload-types";
 
 export const Listings: CollectionConfig = {
   slug: "listings",
@@ -444,6 +445,371 @@ export const Listings: CollectionConfig = {
               type: "checkbox",
               defaultValue: true,
               admin: { width: "25%" },
+            },
+          ],
+        },
+      ],
+    },
+
+    // ---------- Аренда: общие условия (для любого типа сделки «Аренда») ----------
+    {
+      type: "collapsible",
+      label: "Аренда — условия",
+      admin: {
+        condition: (data) => data?.dealType === "rent",
+        description:
+          "Показывается только для объектов с типом сделки «Аренда» (см. «Тип сделки» в блоке «Служебное» выше) — попадает в фиды Авито/ЦИАН/Яндекс/Домклик рядом с ценой.",
+      },
+      fields: [
+        {
+          type: "row",
+          fields: [
+            {
+              name: "rentalPeriod",
+              label: "Период арендной платы",
+              type: "select",
+              defaultValue: "month",
+              options: [
+                { label: "В месяц", value: "month" },
+                { label: "В год", value: "year" },
+              ],
+              admin: {
+                width: "34%",
+                description: "Уточняет уже существующее поле «Цена, ₽» выше — само значение цены не меняет",
+              },
+            },
+            {
+              name: "minRentalTerm",
+              label: "Минимальный срок аренды, мес.",
+              type: "number",
+              min: 0,
+              admin: { width: "33%" },
+            },
+            {
+              name: "utilitiesIncluded",
+              label: "Коммунальные услуги включены в цену",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+          ],
+        },
+        {
+          name: "rentalDeposit",
+          label: "Залог",
+          type: "text",
+          admin: {
+            description:
+              "Сумма залога (например «60 000 ₽») или «Без залога» — свободный текст, т.к. у объектов разный формат условий",
+          },
+        },
+      ],
+    },
+
+    // ---------- Аренда: только для коммерческой недвижимости ----------
+    {
+      type: "collapsible",
+      label: "Коммерческая недвижимость — параметры аренды и помещения",
+      admin: {
+        condition: (data) => data?.propertyType === "commercial",
+        description:
+          "Показывается только для объектов с типом «Коммерческая недвижимость». Поля нужны в основном для аренды, но часть площадок запрашивает их и для объявлений о продаже — поэтому условие только по типу объекта, без учёта типа сделки.",
+      },
+      fields: [
+        {
+          // Обязательный элемент <commercial-type> в фиде Яндекса/Домклик
+          // (см. yandex.ts) — значения ровно из документации
+          // yandex.ru/support/realty/ru/feed/requirements-commercial.html.
+          // Там элемент может повторяться (несколько назначений объекта),
+          // у нас пока select (одно значение) — этого достаточно для
+          // текущей базы; если понадобится несколько назначений сразу,
+          // можно будет переключить на hasMany без потери данных (значения
+          // те же строки).
+          //
+          // required не ставим статичным true, т.к. поле нужно только для
+          // коммерции — вместо этого validate ниже требует значение именно
+          // когда propertyType === "commercial" (и только тогда потребует
+          // непустое значение в форме админки, где data всегда содержит
+          // весь документ). Это защищает от повторения ситуации, когда
+          // коммерческий объект был сохранён вообще без категории.
+          name: "commercialCategory",
+          label: "Категория объекта",
+          type: "select",
+          options: [
+            { label: "Автосервис", value: "auto repair" },
+            { label: "Готовый бизнес", value: "business" },
+            { label: "Помещение свободного назначения", value: "free purpose" },
+            { label: "Гостиница", value: "hotel" },
+            { label: "Земли коммерческого назначения", value: "land" },
+            { label: "Производственное помещение", value: "manufacturing" },
+            { label: "Офисное помещение", value: "office" },
+            { label: "Общепит", value: "public catering" },
+            { label: "Торговое помещение", value: "retail" },
+            { label: "Склад", value: "warehouse" },
+          ],
+          validate: (value: string | null | undefined, { data }: { data: Partial<Listing> }) => {
+            if (data?.propertyType === "commercial" && !value) {
+              return "Обязательно для коммерческой недвижимости — без категории объект не попадёт в фид Яндекса/Домклик корректно";
+            }
+            return true;
+          },
+          admin: {
+            description:
+              "Обязательно для коммерческой недвижимости. ВАЖНО: проверка обязательности смотрит на «Тип недвижимости» из текущей формы — при точечном обновлении через API/скрипты, где в запросе нет поля propertyType, проверка не сработает (это ограничение Payload, не наше решение); через админку сохраняется всегда весь документ, там защита работает.",
+          },
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "rentalType",
+              label: "Тип аренды",
+              type: "select",
+              options: [
+                { label: "Прямая", value: "direct" },
+                { label: "Субаренда", value: "sublease" },
+              ],
+              admin: { width: "50%" },
+            },
+            {
+              name: "commercialBuildingType",
+              label: "Тип здания",
+              type: "select",
+              options: [
+                { label: "Бизнес-центр", value: "business-center" },
+                { label: "Торговый центр", value: "shopping-center" },
+                { label: "Отдельно стоящее здание", value: "detached-building" },
+                { label: "Встроенное помещение в жилом доме", value: "residential-building" },
+                { label: "Складской комплекс", value: "warehouse" },
+              ],
+              admin: {
+                width: "50%",
+                description:
+                  "Не путать с полем «Тип дома» в блоке «Служебное» выше (материал стен для жилых объектов) — здесь тип здания для коммерции. Варианты — ровно список из официальной документации Яндекс.Недвижимости (commercial-building-type), подобраны так, чтобы однозначно мапиться в фид без потери смысла; отдельно стоящее административное или производственное здание — тоже «Отдельно стоящее здание»",
+              },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "distanceFromRoad",
+              label: "Удалённость от дороги",
+              type: "select",
+              options: [
+                { label: "Первая линия", value: "first-line" },
+                { label: "Вторая линия и дальше", value: "second-line" },
+              ],
+              admin: { width: "50%" },
+            },
+            {
+              name: "parking",
+              label: "Парковка",
+              type: "select",
+              options: [
+                { label: "Нет", value: "none" },
+                { label: "На улице", value: "street" },
+                { label: "В здании", value: "indoor" },
+              ],
+              admin: { width: "50%" },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "ceilingHeight",
+              label: "Высота потолков, м",
+              type: "number",
+              min: 0,
+              admin: { width: "50%" },
+            },
+            {
+              name: "electricalPower",
+              label: "Мощность электросети, кВт",
+              type: "number",
+              min: 0,
+              admin: { width: "50%" },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "finishType",
+              label: "Отделка",
+              type: "select",
+              options: [
+                { label: "Без отделки", value: "none" },
+                { label: "Чистовая", value: "finished" },
+                { label: "Офисная", value: "office" },
+              ],
+              admin: { width: "50%" },
+            },
+            {
+              name: "heating",
+              label: "Отопление",
+              type: "select",
+              options: [
+                { label: "Нет", value: "none" },
+                { label: "Центральное", value: "central" },
+                { label: "Автономное", value: "autonomous" },
+              ],
+              admin: {
+                width: "50%",
+                description:
+                  "Не путать с чекбоксом «Отопление» в блоке «Коммуникации» ниже (тот — бинарный признак для домов/дач/участков)",
+              },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "rentalHolidays",
+              label: "Арендные каникулы",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "25%" },
+            },
+            {
+              name: "operatingExpensesIncluded",
+              label: "Эксплуатационные расходы включены",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "25%" },
+            },
+            {
+              name: "multiFloor",
+              label: "Несколько этажей",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "25%" },
+            },
+            {
+              name: "partialRentAllowed",
+              label: "Можно арендовать часть",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "25%" },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "commissionSharing",
+              label: "Поделить комиссию с другим брокером",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "50%" },
+            },
+            {
+              name: "vatIncluded",
+              label: "НДС включён",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "50%" },
+            },
+          ],
+        },
+
+        // Поля ниже добавлены по реальной форме ручного размещения
+        // объекта в аренду на my-rent.domclick.ru (скриншоты формы) —
+        // они совпадают с отдельными полями в документации Яндекса
+        // (office-class/building-name/built-year/internet/ventilation/
+        // fire-alarm/air-conditioner/room-furniture), см. mapping.ts и
+        // yandex.ts.
+        {
+          type: "row",
+          fields: [
+            {
+              name: "businessCenterClass",
+              label: "Класс БЦ/ТЦ",
+              type: "select",
+              options: [
+                { label: "A", value: "A" },
+                { label: "A+", value: "A+" },
+                { label: "B", value: "B" },
+                { label: "B+", value: "B+" },
+                { label: "C", value: "C" },
+                { label: "C+", value: "C+" },
+              ],
+              admin: { width: "25%" },
+            },
+            {
+              name: "buildingName",
+              label: "Название центра",
+              type: "text",
+              admin: { width: "40%", description: "Например «Невский 38» — название бизнес- или торгового центра" },
+            },
+            {
+              name: "buildYear",
+              label: "Год постройки",
+              type: "number",
+              min: 1700,
+              admin: { width: "35%" },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "hasInternet",
+              label: "Интернет",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+            {
+              name: "hasVentilation",
+              label: "Вентиляция",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+            {
+              name: "hasFireAlarm",
+              label: "Пожарная сигнализация",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+          ],
+        },
+        {
+          type: "row",
+          fields: [
+            {
+              name: "hasAirConditioner",
+              label: "Кондиционер",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+            {
+              name: "hasFurniture",
+              label: "Мебель",
+              type: "checkbox",
+              defaultValue: false,
+              admin: { width: "33%" },
+            },
+            {
+              name: "legalAddressProvided",
+              label: "Предоставляется юридический адрес",
+              type: "checkbox",
+              defaultValue: false,
+              admin: {
+                width: "33%",
+                description:
+                  "У Яндекса нет отдельного тега для этого признака — при включении добавляет значение «legal address» к перечню назначений объекта (тег commercial-type), см. комментарий в yandex.ts",
+              },
             },
           ],
         },

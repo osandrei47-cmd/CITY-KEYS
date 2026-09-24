@@ -4,9 +4,24 @@
 // согласования с менеджером Авито. Структура ниже — по устоявшемуся
 // отраслевому формату (Ads formatVersion=3 / target=Avito.ru), которым
 // пользуются все CRM на рынке, но перед реальным запуском её нужно
-// свериться с шаблоном из личного кабинета Авито.
+// свериться с шаблоном из личного кабинета Авито. Это касается и
+// арендных полей (RentByPeriod/Deposit/RentType/CeilingHeight и т.п.
+// ниже) — в отличие от src/lib/feed/yandex.ts, где те же поля для
+// коммерческой аренды уже сверены с официальной документацией Яндекса,
+// здесь это всё ещё рабочая гипотеза.
 
-import { buildingTypeLabels, renovationLabels, type Listing } from "@/lib/listing-types";
+import {
+  buildingTypeLabels,
+  commercialBuildingTypeLabels,
+  distanceFromRoadLabels,
+  finishTypeLabels,
+  heatingLabels,
+  parkingLabels,
+  renovationLabels,
+  rentalPeriodLabels,
+  rentalTypeLabels,
+  type Listing,
+} from "@/lib/listing-types";
 import { AGENT_NAME, AGENT_PHONE } from "./constants";
 import { cdata, escapeXml, listingPhotoUrls, richTextToPlainText } from "./helpers";
 
@@ -101,6 +116,58 @@ function buildAd(listing: Listing): string {
         `<MarketType>${listing.propertyType === "novostroyki" ? "Новостройка" : "Вторичный рынок"}</MarketType>`,
       );
     }
+  }
+
+  // ---------- Аренда: универсальные поля ----------
+  // Как и остальной файл (см. шапку) — конкретные названия тегов ниже не
+  // с чем свериться (домен заблокирован для фетча), собраны по
+  // устоявшейся отраслевой практике. Перед реальным запуском арендных
+  // объявлений стоит свериться с шаблоном из личного кабинета Авито.
+  if (listing.dealType === "rent") {
+    if (listing.rentalPeriod) {
+      tags.push(`<RentByPeriod>${escapeXml(rentalPeriodLabels[listing.rentalPeriod])}</RentByPeriod>`);
+    }
+    if (listing.rentalDeposit) tags.push(`<Deposit>${escapeXml(listing.rentalDeposit)}</Deposit>`);
+    if (typeof listing.minRentalTerm === "number") {
+      tags.push(`<MinRentTerm>${listing.minRentalTerm}</MinRentTerm>`);
+    }
+    if (listing.utilitiesIncluded) tags.push("<UtilitiesIncluded>1</UtilitiesIncluded>");
+  }
+
+  // ---------- Аренда: только коммерческая недвижимость ----------
+  if (category === "Коммерческая недвижимость") {
+    if (listing.rentalType) {
+      tags.push(`<RentType>${escapeXml(rentalTypeLabels[listing.rentalType])}</RentType>`);
+    }
+    if (listing.rentalHolidays) tags.push("<RentHolidays>1</RentHolidays>");
+    if (listing.operatingExpensesIncluded) {
+      tags.push("<OperatingExpensesIncluded>1</OperatingExpensesIncluded>");
+    }
+    if (listing.commercialBuildingType) {
+      tags.push(
+        `<BuildingType>${escapeXml(commercialBuildingTypeLabels[listing.commercialBuildingType])}</BuildingType>`,
+      );
+    }
+    if (listing.distanceFromRoad) {
+      tags.push(
+        `<DistanceFromRoad>${escapeXml(distanceFromRoadLabels[listing.distanceFromRoad])}</DistanceFromRoad>`,
+      );
+    }
+    if (listing.parking) tags.push(`<Parking>${escapeXml(parkingLabels[listing.parking])}</Parking>`);
+    if (listing.multiFloor) tags.push("<MultiFloor>1</MultiFloor>");
+    if (listing.partialRentAllowed) tags.push("<PartialRentAllowed>1</PartialRentAllowed>");
+    if (typeof listing.ceilingHeight === "number") {
+      tags.push(`<CeilingHeight>${listing.ceilingHeight}</CeilingHeight>`);
+    }
+    if (listing.finishType) {
+      tags.push(`<FinishType>${escapeXml(finishTypeLabels[listing.finishType])}</FinishType>`);
+    }
+    if (typeof listing.electricalPower === "number") {
+      tags.push(`<ElectricalPower>${listing.electricalPower}</ElectricalPower>`);
+    }
+    if (listing.heating) tags.push(`<Heating>${escapeXml(heatingLabels[listing.heating])}</Heating>`);
+    if (listing.commissionSharing) tags.push("<CommissionSharing>1</CommissionSharing>");
+    if (listing.vatIncluded) tags.push("<VatIncluded>1</VatIncluded>");
   }
 
   const photos = listingPhotoUrls(listing);

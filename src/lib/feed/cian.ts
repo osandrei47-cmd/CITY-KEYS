@@ -5,7 +5,11 @@
 // каркас (feed/feed_version/object, ExternalId, Category, Price/Value/
 // Currency, Building/FloorsCount/MaterialType, Photos/Photo/Url) via
 // перекрёстные источники подтверждён, но не 100%. Перед реальным
-// запуском стоит свериться с полной официальной документацией.
+// запуском стоит свериться с полной официальной документацией. Это
+// касается и арендных тегов ниже (Deposit/RentType/CeilingHeight и
+// т.п.) — в отличие от src/lib/feed/yandex.ts, где те же поля для
+// коммерческой аренды уже сверены с официальной документацией Яндекса,
+// здесь это всё ещё рабочая гипотеза.
 
 import type { Listing } from "@/lib/listing-types";
 import { AGENT_NAME, AGENT_PHONE } from "./constants";
@@ -58,7 +62,8 @@ function buildObject(listing: Listing): string {
   tags.push(`<Phones><PhoneSchema><CountryCode>+7</CountryCode><Number>${escapeXml(AGENT_PHONE.replace(/^\+7/, ""))}</Number></PhoneSchema></Phones>`);
   tags.push(`<AgentName>${escapeXml(AGENT_NAME)}</AgentName>`);
 
-  const rentPeriod = listing.dealType === "rent" ? "<PaymentPeriod>month</PaymentPeriod>" : "";
+  const rentPeriod =
+    listing.dealType === "rent" ? `<PaymentPeriod>${listing.rentalPeriod ?? "month"}</PaymentPeriod>` : "";
   tags.push(`<Price><Value>${listing.price}</Value><Currency>RUB</Currency>${rentPeriod}</Price>`);
 
   if (listing.cadastralNumber) {
@@ -98,6 +103,43 @@ function buildObject(listing: Listing): string {
   }
 
   if (listing.mortgageAvailable) tags.push("<MortgageAllowed>true</MortgageAllowed>");
+
+  // ---------- Аренда: универсальные поля ----------
+  if (listing.dealType === "rent") {
+    if (listing.rentalDeposit) tags.push(`<Deposit>${escapeXml(listing.rentalDeposit)}</Deposit>`);
+    if (typeof listing.minRentalTerm === "number") {
+      tags.push(`<MinRentTerm>${listing.minRentalTerm}</MinRentTerm>`);
+    }
+    if (listing.utilitiesIncluded) tags.push("<UtilitiesIncluded>true</UtilitiesIncluded>");
+  }
+
+  // ---------- Аренда: только коммерческая недвижимость ----------
+  // Как и остальной файл (см. шапку) — названия тегов ниже собраны по
+  // устоявшейся отраслевой практике, официальную XSD свериться не удалось
+  // (cian.ru отдаёт капчу). Значения передаются как сырые enum'ы —
+  // так же, как уже существующий MaterialType выше.
+  if (category === "commercialSale" || category === "commercialRent") {
+    if (listing.rentalType) tags.push(`<RentType>${listing.rentalType}</RentType>`);
+    if (listing.rentalHolidays) tags.push("<RentHolidays>true</RentHolidays>");
+    if (listing.operatingExpensesIncluded) {
+      tags.push("<OperatingExpensesIncluded>true</OperatingExpensesIncluded>");
+    }
+    if (listing.commercialBuildingType) {
+      tags.push(`<CommercialBuildingType>${listing.commercialBuildingType}</CommercialBuildingType>`);
+    }
+    if (listing.distanceFromRoad) tags.push(`<DistanceFromRoad>${listing.distanceFromRoad}</DistanceFromRoad>`);
+    if (listing.parking) tags.push(`<Parking>${listing.parking}</Parking>`);
+    if (listing.multiFloor) tags.push("<MultiFloor>true</MultiFloor>");
+    if (listing.partialRentAllowed) tags.push("<PartialRentAllowed>true</PartialRentAllowed>");
+    if (typeof listing.ceilingHeight === "number") tags.push(`<CeilingHeight>${listing.ceilingHeight}</CeilingHeight>`);
+    if (listing.finishType) tags.push(`<FinishType>${listing.finishType}</FinishType>`);
+    if (typeof listing.electricalPower === "number") {
+      tags.push(`<ElectricalPower>${listing.electricalPower}</ElectricalPower>`);
+    }
+    if (listing.heating) tags.push(`<Heating>${listing.heating}</Heating>`);
+    if (listing.commissionSharing) tags.push("<CommissionSharing>true</CommissionSharing>");
+    if (listing.vatIncluded) tags.push("<VatIncluded>true</VatIncluded>");
+  }
 
   const photos = listingPhotoUrls(listing);
   if (photos.length) {

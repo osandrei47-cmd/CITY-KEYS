@@ -61,6 +61,49 @@ export const buildingTypeLabels: Record<string, string> = {
   wood: "Деревянный",
 };
 
+export const rentalPeriodLabels: Record<string, string> = {
+  month: "В месяц",
+  year: "В год",
+};
+
+export const rentalTypeLabels: Record<string, string> = {
+  direct: "Прямая",
+  sublease: "Субаренда",
+};
+
+// Ровно 5 значений — список commercial-building-type из официальной
+// документации Яндекс.Недвижимости (см. mapping.ts и Listings.ts).
+export const commercialBuildingTypeLabels: Record<string, string> = {
+  "business-center": "Бизнес-центр",
+  "shopping-center": "Торговый центр",
+  "detached-building": "Отдельно стоящее здание",
+  "residential-building": "Встроенное помещение в жилом доме",
+  warehouse: "Складской комплекс",
+};
+
+export const distanceFromRoadLabels: Record<string, string> = {
+  "first-line": "Первая линия",
+  "second-line": "Вторая линия и дальше",
+};
+
+export const parkingLabels: Record<string, string> = {
+  none: "Нет",
+  street: "На улице",
+  indoor: "В здании",
+};
+
+export const finishTypeLabels: Record<string, string> = {
+  none: "Без отделки",
+  finished: "Чистовая",
+  office: "Офисная",
+};
+
+export const heatingLabels: Record<string, string> = {
+  none: "Нет",
+  central: "Центральное",
+  autonomous: "Автономное",
+};
+
 export const statusLabels: Record<Listing["status"], string> = {
   "for-sale": "В продаже",
   reserved: "Забронирован",
