@@ -12,6 +12,7 @@
 // здесь это всё ещё рабочая гипотеза.
 
 import type { Listing } from "@/lib/listing-types";
+import { buildLocalityAndStreet } from "./address";
 import { AGENT_NAME, AGENT_PHONE } from "./constants";
 import { cdata, escapeXml, listingPhotoUrls, richTextToPlainText } from "./helpers";
 
@@ -52,7 +53,12 @@ function buildObject(listing: Listing): string {
   const description = richTextToPlainText(listing.description);
   if (description) tags.push(`<Description>${cdata(description)}</Description>`);
 
-  const address = [listing.locality, listing.address].filter(Boolean).join(", ");
+  // buildLocalityAndStreet, а не [locality, address].join(", ") — поле
+  // «Адрес / район» на деле часто содержит уже полный адрес целиком
+  // (включая населённый пункт), из-за чего locality задваивался с
+  // address (та же причина, по которой Домклик отклонял объекты в
+  // фиде Яндекса, см. src/lib/feed/address.ts).
+  const address = buildLocalityAndStreet(listing);
   tags.push(`<Address>${escapeXml(address)}</Address>`);
 
   if (typeof listing.lat === "number" && typeof listing.lng === "number") {

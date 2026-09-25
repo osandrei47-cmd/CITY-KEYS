@@ -22,6 +22,7 @@ import {
   rentalTypeLabels,
   type Listing,
 } from "@/lib/listing-types";
+import { buildLocalityAndStreet } from "./address";
 import { AGENT_NAME, AGENT_PHONE } from "./constants";
 import { cdata, escapeXml, listingPhotoUrls, richTextToPlainText } from "./helpers";
 
@@ -67,7 +68,12 @@ function buildAd(listing: Listing): string {
   tags.push(`<Category>${escapeXml(category)}</Category>`);
   tags.push(`<OperationType>${toOperationType(listing.dealType)}</OperationType>`);
 
-  const address = [listing.locality, listing.address].filter(Boolean).join(", ");
+  // buildLocalityAndStreet, а не [locality, address].join(", ") — поле
+  // «Адрес / район» на деле часто содержит уже полный адрес целиком
+  // (включая населённый пункт), из-за чего locality задваивался с
+  // address (та же причина, по которой Домклик отклонял объекты в
+  // фиде Яндекса, см. src/lib/feed/address.ts).
+  const address = buildLocalityAndStreet(listing);
   tags.push(`<Address>${escapeXml(address)}</Address>`);
 
   if (typeof listing.lat === "number") tags.push(`<Latitude>${listing.lat}</Latitude>`);

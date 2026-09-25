@@ -22,7 +22,8 @@
 // <rent-pledge>.
 
 import type { Listing } from "@/lib/listing-types";
-import { AGENT_NAME, AGENT_PHONE, DEFAULT_DISTRICT, DEFAULT_REGION, SITE_URL } from "./constants";
+import { buildCleanAddress } from "./address";
+import { AGENT_NAME, AGENT_PHONE, SITE_URL } from "./constants";
 import { cdata, escapeXml, listingPhotoUrls, listingUrl, richTextToPlainText } from "./helpers";
 import {
   hasRentalDeposit,
@@ -105,14 +106,28 @@ function buildOffer(listing: Listing, target: YandexFeedTarget): string {
     }
   }
 
+  // Дедупликация региона/района/населённого пункта — поле «Адрес / район»
+  // у большинства объектов на деле уже содержит полный адрес целиком
+  // ("Ленинградская область, город Кингисепп, ..."), хотя по описанию в
+  // админке должно быть только улицей/домом. Раньше <region>/<district>/
+  // <locality-name> добавлялись ПОВЕРХ такой строки без проверки — из-за
+  // этого Домклик отклонил объект с задвоенным адресом ("Ленинградская
+  // область, Кингисеппский район, Кингисепп, Ленинградская область,
+  // город Кингисепп, микрорайон Касколовка, дом 2"). См. buildCleanAddress.
+  const cleanAddress = buildCleanAddress(listing);
   const locationParts: string[] = [];
   locationParts.push("<country>Россия</country>");
-  locationParts.push(`<region>${escapeXml(DEFAULT_REGION)}</region>`);
-  locationParts.push(`<district>${escapeXml(DEFAULT_DISTRICT)}</district>`);
-  if (listing.locality) {
-    locationParts.push(`<locality-name>${escapeXml(listing.locality)}</locality-name>`);
+  locationParts.push(`<region>${escapeXml(cleanAddress.region)}</region>`);
+  locationParts.push(`<district>${escapeXml(cleanAddress.district)}</district>`);
+  if (cleanAddress.localityName) {
+    locationParts.push(`<locality-name>${escapeXml(cleanAddress.localityName)}</locality-name>`);
   }
-  locationParts.push(`<address>${escapeXml(listing.address ?? "")}</address>`);
+  // Если после вычитки региона/района/населённого пункта от адреса ничего
+  // не осталось (например, деревня без более точного адреса — реальный
+  // случай в базе), <address> не должен быть пустым: подставляем
+  // населённый пункт, а на крайний случай — исходную строку как есть.
+  const addressValue = cleanAddress.streetAddress || cleanAddress.localityName || listing.address || "";
+  locationParts.push(`<address>${escapeXml(addressValue)}</address>`);
   if (typeof listing.lat === "number") locationParts.push(`<latitude>${listing.lat}</latitude>`);
   if (typeof listing.lng === "number") locationParts.push(`<longitude>${listing.lng}</longitude>`);
   tags.push(`<location>${locationParts.join("")}</location>`);
