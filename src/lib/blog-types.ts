@@ -21,10 +21,15 @@ function truncateAtWord(text: string, maxLength: number): string {
 }
 
 export function buildBlogMetaTitle(post: BlogPost): string {
-  return `${post.title} — CITY KEYS`;
+  return post.metaTitle?.trim() || `${post.title} — CITY KEYS`;
 }
 
 export function buildBlogMetaDescription(post: BlogPost): string {
+  // metaDescription — явный override, выводится как есть (не обрезается:
+  // раз его вписали вручную именно под SEO, 160 символов — не жёсткий
+  // лимит, а подсказка только для автогенерируемого варианта из excerpt).
+  const override = post.metaDescription?.trim();
+  if (override) return override;
   return truncateAtWord(post.excerpt, META_DESCRIPTION_MAX_LENGTH);
 }
 
