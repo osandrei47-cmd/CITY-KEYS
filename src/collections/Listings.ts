@@ -36,14 +36,18 @@ export const Listings: CollectionConfig = {
         }
 
         try {
-          const { postId } = await publishListingToVk(listing, req.payload);
+          const { postId, skippedPhotos } = await publishListingToVk(listing, req.payload);
           const vkPublishedAt = new Date().toISOString();
+          const vkSkippedPhotos =
+            skippedPhotos.length > 0
+              ? skippedPhotos.map((p) => `${p.filename}: ${p.reason}`).join("; ")
+              : null;
           await req.payload.update({
             collection: "listings",
             id,
-            data: { vkPublishedAt, vkPostId: String(postId) },
+            data: { vkPublishedAt, vkPostId: String(postId), vkSkippedPhotos },
           });
-          return Response.json({ ok: true, postId, vkPublishedAt });
+          return Response.json({ ok: true, postId, vkPublishedAt, skippedPhotos });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Неизвестная ошибка VK API";
           const errorType = err instanceof VkReauthRequiredError
@@ -301,6 +305,16 @@ export const Listings: CollectionConfig = {
       label: "ID поста ВК",
       type: "text",
       admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: "vkSkippedPhotos",
+      label: "Пропущенные при публикации в ВК фото",
+      type: "textarea",
+      admin: {
+        readOnly: true,
+        hidden: true,
+        description: "Какие фото не прикрепились к последнему посту в ВК и почему — заполняется автоматически",
+      },
     },
     {
       name: "vkPublishPanel",

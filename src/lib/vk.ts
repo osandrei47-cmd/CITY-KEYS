@@ -19,14 +19,18 @@
 import type { Payload } from "payload";
 import { randomBytes } from "crypto";
 import {
+  dealTypeLabels,
   formatPrice,
   isMediaDoc,
   propertyTypeLabels,
+  rentalPeriodLabels,
   richTextToPlainText,
   roomsLabels,
   truncateAtWord,
   type Listing,
 } from "@/lib/listing-types";
+import { buildFullAddress } from "@/lib/feed/address";
+import type { Media } from "@/payload-types";
 import { absoluteUrl, listingUrl } from "@/lib/feed/helpers";
 import { SITE_URL } from "@/lib/feed/constants";
 
@@ -35,6 +39,17 @@ const VK_API_BASE = "https://api.vk.com/method";
 export const VK_OAUTH_AUTHORIZE_URL = "https://id.vk.ru/authorize";
 const VK_OAUTH_TOKEN_URL = "https://id.vk.ru/oauth2/auth";
 const POST_DESCRIPTION_MAX_LENGTH = 400;
+
+// Сколько первых фото из галереи объекта прикреплять к посту — поменять
+// при необходимости в одном месте.
+const MAX_WALL_PHOTOS = 4;
+
+// Требования VK к фото для wall-вложений (photos.saveWallPhoto) — см.
+// https://dev.vk.com/ru/method/photos.saveWallPhoto: JPG/PNG/GIF, не
+// больше 50 МБ. Проверяем это ДО похода в VK, чтобы показать понятную
+// причину пропуска вместо общей ошибки API.
+const ALLOWED_WALL_PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/gif"];
+const MAX_WALL_PHOTO_FILESIZE_BYTES = 50 * 1024 * 1024;
 
 // offline — обязателен, иначе VK не выдаёт refresh_token и токен умирает
 // через час без возможности продления.
@@ -219,7 +234,7 @@ async function vkApi<T>(method: string, params: Record<string, string>, accessTo
 // https://dev.vk.com/ru/method/photos.saveWallPhoto. Требует user-токен
 // (см. заголовок файла) — с токеном сообщества photos.getWallUploadServer
 // падает с "method is unavailable with group auth".
-async function uploadWallPhoto(photoUrl: string, accessToken: string): Promise<string> {
+export async function uploadWallPhoto(photoUrl: string, accessToken: string): Promise<string> {
   const groupId = getGroupId();
 
   const uploadServer = await vkApi<{ upload_url: string }>(
@@ -238,9 +253,18 @@ async function uploadWallPhoto(photoUrl: string, accessToken: string): Promise<s
   form.append("photo", photoBlob, "photo.jpg");
 
   const uploadRes = await fetch(uploadServer.upload_url, { method: "POST", body: form });
-  const uploadJson = (await uploadRes.json()) as { photo?: string; server?: number; hash?: string };
-  if (!uploadJson.photo || uploadJson.photo === "[]") {
-    throw new Error("Сервер ВКонтакте не принял загруженное фото");
+  const uploadJson = (await uploadRes.json().catch(() => null)) as {
+    photo?: string;
+    server?: number;
+    hash?: string;
+    error?: string;
+  } | null;
+  if (!uploadJson || !uploadJson.photo || uploadJson.photo === "[]") {
+    // Точный ответ сервера загрузки ВК — не придумываем причину, если сам
+    // VK её не называет явно (например error: "mask error", "failed").
+    throw new Error(
+      `Сервер ВКонтакте не принял загруженное фото — ответ: ${JSON.stringify(uploadJson)}`,
+    );
   }
 
   const saved = await vkApi<Array<{ id: number; owner_id: number }>>(
@@ -258,20 +282,104 @@ async function uploadWallPhoto(photoUrl: string, accessToken: string): Promise<s
   return `photo${photo.owner_id}_${photo.id}`;
 }
 
+export type VkSkippedPhoto = { filename: string; reason: string };
+
+// Проверяем формат/размер ДО запроса к VK — отдельно от самого API, чтобы
+// причина пропуска была понятной ("не тот формат"/"слишком большой файл"),
+// а не общей ошибкой VK. Видео сюда никогда не попадает — droneVideo это
+// отдельное поле, а само поле "Фотографии" ограничено relationTo: media без
+// проверки mimeType на уровне схемы, так что страховка нужна именно тут.
+function checkWallPhotoCandidate(doc: Media): string | null {
+  if (!doc.url) return "у файла нет URL (не загрузился в S3?)";
+  if (!doc.mimeType || !ALLOWED_WALL_PHOTO_MIME_TYPES.includes(doc.mimeType)) {
+    return `неподходящий формат файла (${doc.mimeType ?? "неизвестен"}) — ВК принимает только JPG/PNG/GIF`;
+  }
+  if (doc.filesize && doc.filesize > MAX_WALL_PHOTO_FILESIZE_BYTES) {
+    return `файл больше 50 МБ (${Math.round(doc.filesize / 1024 / 1024)} МБ) — ограничение ВК`;
+  }
+  return null;
+}
+
+// Загружает до MAX_WALL_PHOTOS первых фото из галереи ПОСЛЕДОВАТЕЛЬНО (не
+// параллельно — чтобы не упереться в лимиты VK на одновременные запросы).
+// Если фото не подошло по формату/размеру или VK отказал — весь пост всё
+// равно публикуется с оставшимися фото, а причина пропуска возвращается
+// отдельно (без замены пропущенного следующим фото из галереи — кандидатов
+// всегда ровно первые MAX_WALL_PHOTOS, как в галерее).
+async function uploadWallPhotos(
+  photos: Media[],
+  accessToken: string,
+): Promise<{ attachments: string[]; skipped: VkSkippedPhoto[] }> {
+  const candidates = photos.slice(0, MAX_WALL_PHOTOS);
+  const attachments: string[] = [];
+  const skipped: VkSkippedPhoto[] = [];
+
+  for (const doc of candidates) {
+    const label = doc.filename ?? `id=${doc.id}`;
+    const precheckReason = checkWallPhotoCandidate(doc);
+    if (precheckReason) {
+      skipped.push({ filename: label, reason: precheckReason });
+      continue;
+    }
+
+    try {
+      const attachment = await uploadWallPhoto(absoluteUrl(doc.url as string), accessToken);
+      attachments.push(attachment);
+    } catch (error) {
+      skipped.push({
+        filename: label,
+        reason: error instanceof Error ? error.message : "неизвестная ошибка загрузки",
+      });
+    }
+  }
+
+  return { attachments, skipped };
+}
+
+// Пост публичный — номер квартиры и кадастровый номер туда не идут (это
+// личные данные собственника). Кадастровый номер и так не участвует в
+// тексте поста; номер квартиры вырезаем из свободного текста address
+// (отдельного поля под него в схеме нет — агенты иногда дописывают "кв. N"
+// прямо в адрес). Эвристика над свободным текстом, как и в
+// src/lib/feed/address.ts — не гарантия для любых формулировок.
+function stripApartmentNumber(address: string): string {
+  return address
+    .replace(/,?\s*(?:кв\.?|квартира)\s*№?\s*\d+[а-яё]?\s*/gi, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    .replace(/^,\s*/, "")
+    .replace(/,\s*$/, "");
+}
+
+// Полный адрес одной строкой — те же поля и та же логика дедупликации
+// региона/населённого пункта, что в фидах (buildFullAddress), чтобы не
+// получить "Ленинградская область, ... Ленинградская область" и в посте
+// ВК. Для квартир — адрес до дома, без номера квартиры (см. выше).
+function buildVkPostAddress(listing: Listing): string {
+  const address = listing.propertyType === "kvartiry" ? stripApartmentNumber(listing.address ?? "") : listing.address;
+  return buildFullAddress({ address, locality: listing.locality });
+}
+
 export function buildVkPostMessage(listing: Listing): string {
   const lines: string[] = [];
+
+  lines.push(dealTypeLabels[listing.dealType]);
 
   const typeLabel = propertyTypeLabels[listing.propertyType];
   const roomsLabel = listing.rooms ? roomsLabels[listing.rooms] : null;
   lines.push([typeLabel, roomsLabel].filter(Boolean).join(", "));
-  lines.push(formatPrice(listing.price));
 
-  const details: string[] = [];
-  if (listing.areaTotal) details.push(`${listing.areaTotal} м²`);
-  else if (listing.areaLot) details.push(`${listing.areaLot} сот.`);
-  const place = listing.locality || listing.address;
-  if (place) details.push(place);
-  if (details.length) lines.push(details.join(", "));
+  const priceLine =
+    listing.dealType === "rent" && listing.rentalPeriod
+      ? `${formatPrice(listing.price)} ${rentalPeriodLabels[listing.rentalPeriod].toLowerCase()}`
+      : formatPrice(listing.price);
+  lines.push(priceLine);
+
+  if (listing.areaTotal) lines.push(`${listing.areaTotal} м²`);
+  else if (listing.areaLot) lines.push(`${listing.areaLot} сот.`);
+
+  const address = buildVkPostAddress(listing);
+  if (address) lines.push(address);
 
   const description = truncateAtWord(
     richTextToPlainText(listing.description).replace(/\s+/g, " "),
@@ -291,14 +399,13 @@ export function buildVkPostMessage(listing: Listing): string {
 export async function publishListingToVk(
   listing: Listing,
   payload: Payload,
-): Promise<{ postId: number; groupId: string }> {
+): Promise<{ postId: number; groupId: string; skippedPhotos: VkSkippedPhoto[] }> {
   const groupId = getGroupId();
   const accessToken = await getValidVkAccessToken(payload);
 
-  const coverPhoto = (listing.photos ?? []).find(isMediaDoc);
-  const attachment = coverPhoto?.url
-    ? await uploadWallPhoto(absoluteUrl(coverPhoto.url), accessToken)
-    : null;
+  const photoDocs = (listing.photos ?? []).filter(isMediaDoc);
+  const { attachments, skipped } =
+    photoDocs.length > 0 ? await uploadWallPhotos(photoDocs, accessToken) : { attachments: [], skipped: [] };
 
   const message = buildVkPostMessage(listing);
 
@@ -308,10 +415,10 @@ export async function publishListingToVk(
       owner_id: String(-Math.abs(Number(groupId))),
       from_group: "1",
       message,
-      ...(attachment ? { attachments: attachment } : {}),
+      ...(attachments.length > 0 ? { attachments: attachments.join(",") } : {}),
     },
     accessToken,
   );
 
-  return { postId: result.post_id, groupId };
+  return { postId: result.post_id, groupId, skippedPhotos: skipped };
 }

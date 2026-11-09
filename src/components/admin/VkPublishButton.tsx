@@ -40,6 +40,14 @@ export function VkPublishButton({
         setPending(false);
         return;
       }
+      const skippedPhotos = (json?.skippedPhotos as { filename: string; reason: string }[] | undefined) ?? [];
+      if (skippedPhotos.length > 0) {
+        window.alert(
+          `Пост опубликован, но не все фото прикрепились:\n\n${skippedPhotos
+            .map((p) => `• ${p.filename} — ${p.reason}`)
+            .join("\n")}`,
+        );
+      }
       window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не удалось опубликовать в ВК");

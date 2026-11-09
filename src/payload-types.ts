@@ -257,6 +257,10 @@ export interface Listing {
   vkPublishedAt?: string | null;
   vkPostId?: string | null;
   /**
+   * Какие фото не прикрепились к последнему посту в ВК и почему — заполняется автоматически
+   */
+  vkSkippedPhotos?: string | null;
+  /**
    * Показывается на карточке лота на странице посёлка «Луга Парк». Для обычных объектов каталога оставить пустым.
    */
   badge?: ('start' | 'last') | null;
@@ -911,6 +915,7 @@ export interface ListingsSelect<T extends boolean = true> {
   status?: T;
   vkPublishedAt?: T;
   vkPostId?: T;
+  vkSkippedPhotos?: T;
   badge?: T;
   project?: T;
   leads?: T;

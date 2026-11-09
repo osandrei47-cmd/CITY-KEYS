@@ -14,6 +14,7 @@ export const VkPublishPanel: UIFieldServerComponent = async ({ data, payload }) 
   const listingId = data?.id as number | string | undefined;
   const vkPublishedAt = (data?.vkPublishedAt as string | null | undefined) ?? null;
   const vkPostId = (data?.vkPostId as string | null | undefined) ?? null;
+  const vkSkippedPhotos = (data?.vkSkippedPhotos as string | null | undefined) ?? null;
 
   if (!listingId) {
     return <p style={{ fontSize: 13, opacity: 0.6 }}>Сохраните объект, чтобы опубликовать в ВК.</p>;
@@ -52,6 +53,11 @@ export const VkPublishPanel: UIFieldServerComponent = async ({ data, payload }) 
               </a>
             </>
           ) : null}
+        </p>
+      ) : null}
+      {vkSkippedPhotos ? (
+        <p style={{ fontSize: 12, color: "#92400e" }}>
+          Не прикрепились к последнему посту: {vkSkippedPhotos}
         </p>
       ) : null}
       {oauthReady ? (
