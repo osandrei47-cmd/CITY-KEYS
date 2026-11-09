@@ -77,6 +77,9 @@ export async function GET(request: NextRequest) {
     });
 
     const payload = await getPayloadClient();
+    // updateGlobal полностью заменяет сохранённые значения (не дополняет) —
+    // старая пара access/refresh token после этого недействительна и больше
+    // нигде не хранится.
     await payload.updateGlobal({
       slug: "vk-oauth",
       data: {
@@ -88,8 +91,20 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Сам токен никогда не выводим — только то, какие права VK реально
+    // выдал, чтобы сразу видеть, попали ли wall/photos в ответ, а не
+    // гадать по ошибке публикации через час.
+    const grantedScope = tokens.scope ?? "(VK не вернул scope в ответе)";
+    const missing = ["wall", "photos", "groups"].filter(
+      (s) => !grantedScope.split(/\s+/).includes(s),
+    );
+    const scopeNote =
+      missing.length > 0
+        ? `ВНИМАНИЕ: не хватает прав — ${missing.join(", ")}.`
+        : "wall, photos и groups выданы.";
+
     return plainTextResponse(
-      "Готово — ВКонтакте авторизован. Можно закрыть эту вкладку и вернуться в админку.",
+      `Готово — ВКонтакте авторизован.\nВыданные права (scope): ${grantedScope}\n${scopeNote}\nМожно закрыть эту вкладку и вернуться в админку.`,
       200,
     );
   } catch (err) {

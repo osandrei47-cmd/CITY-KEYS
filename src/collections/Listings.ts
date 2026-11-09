@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { publishListingToVk } from "@/lib/vk";
+import { publishListingToVk, VkPermissionError, VkReauthRequiredError } from "@/lib/vk";
 import type { Listing } from "@/payload-types";
 
 export const Listings: CollectionConfig = {
@@ -46,7 +46,12 @@ export const Listings: CollectionConfig = {
           return Response.json({ ok: true, postId, vkPublishedAt });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Неизвестная ошибка VK API";
-          return Response.json({ error: message }, { status: 502 });
+          const errorType = err instanceof VkReauthRequiredError
+            ? "reauth"
+            : err instanceof VkPermissionError
+              ? "permission"
+              : "unknown";
+          return Response.json({ error: message, errorType }, { status: 502 });
         }
       },
     },

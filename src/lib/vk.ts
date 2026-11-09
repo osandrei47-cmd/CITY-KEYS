@@ -62,6 +62,15 @@ export function getVkOAuthAppCredentials(): { clientId: string; clientSecret: st
   return { clientId, clientSecret: process.env.VK_OAUTH_CLIENT_SECRET };
 }
 
+// Различаем причины отказа, чтобы в админке показывать не общую ошибку, а
+// понятную подсказку: VkReauthRequiredError — нужна переавторизация через
+// /api/vk/authorize (нет/истёк/отозван refresh_token, либо токен выдан не
+// тому IP — код 5 у VK); VkPermissionError — токен рабочий, но у него не
+// хватает прав (scope) на сам метод — переавторизация это не починит, нужно
+// проверять права приложения в кабинете VK.
+export class VkReauthRequiredError extends Error {}
+export class VkPermissionError extends Error {}
+
 type VkTokenResponse = {
   access_token: string;
   refresh_token?: string;
@@ -117,7 +126,7 @@ export async function exchangeVkAuthCode(params: {
 async function refreshVkAccessToken(payload: Payload): Promise<string> {
   const state = await payload.findGlobal({ slug: "vk-oauth" });
   if (!state.refreshToken || !state.deviceId) {
-    throw new Error(
+    throw new VkReauthRequiredError(
       "ВК не авторизован (нет refresh_token) — пройдите авторизацию через /api/vk/authorize",
     );
   }
@@ -133,7 +142,16 @@ async function refreshVkAccessToken(payload: Payload): Promise<string> {
   });
   if (clientSecret) body.set("client_secret", clientSecret);
 
-  const tokens = await requestVkOAuthToken(body);
+  // Любая ошибка обновления (invalid_grant/invalid_token и т.п.) означает,
+  // что старая пара токенов уже недействительна — починить это может только
+  // новая авторизация, поэтому всегда перебрасываем как VkReauthRequiredError.
+  let tokens: VkTokenResponse;
+  try {
+    tokens = await requestVkOAuthToken(body);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "неизвестная ошибка";
+    throw new VkReauthRequiredError(`Не удалось обновить токен ВК: ${message}`);
+  }
 
   await payload.updateGlobal({
     slug: "vk-oauth",
@@ -156,7 +174,7 @@ async function refreshVkAccessToken(payload: Payload): Promise<string> {
 export async function getValidVkAccessToken(payload: Payload): Promise<string> {
   const state = await payload.findGlobal({ slug: "vk-oauth" });
   if (!state.accessToken || !state.refreshToken) {
-    throw new Error(
+    throw new VkReauthRequiredError(
       "ВК не авторизован — откройте /api/vk/authorize под администратором и разрешите доступ",
     );
   }
@@ -180,7 +198,19 @@ async function vkApi<T>(method: string, params: Record<string, string>, accessTo
   const res = await fetch(url, { method: "POST" });
   const json = (await res.json()) as { error?: { error_code: number; error_msg: string }; response?: T };
   if (json.error) {
-    throw new Error(`VK API (${method}): ${json.error.error_msg} [код ${json.error.error_code}]`);
+    const message = `VK API (${method}): ${json.error.error_msg} [код ${json.error.error_code}]`;
+    // Код 5 — "User authorization failed" (токен истёк/отозван/выдан не
+    // тому IP): лечится только переавторизацией. Коды 7 и 15 — "Permission
+    // to perform this action is denied"/"Access denied": токен рабочий, но
+    // ему не хватает scope на сам метод — переавторизация это не починит,
+    // нужно разбираться с правами приложения в кабинете VK (см. docs/vk-id-oauth.md).
+    if (json.error.error_code === 5) {
+      throw new VkReauthRequiredError(message);
+    }
+    if (json.error.error_code === 7 || json.error.error_code === 15) {
+      throw new VkPermissionError(message);
+    }
+    throw new Error(message);
   }
   return json.response as T;
 }

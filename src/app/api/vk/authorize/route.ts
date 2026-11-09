@@ -48,6 +48,10 @@ export async function GET(request: NextRequest) {
   authorizeUrl.searchParams.set("state", state);
   authorizeUrl.searchParams.set("code_challenge", codeChallenge);
   authorizeUrl.searchParams.set("code_challenge_method", "S256");
+  // Без этого VK может молча вернуть код для старого набора прав (тот, что
+  // пользователь разрешал в прошлый раз), не показав форму разрешений
+  // заново — даже если в scope теперь указаны новые права (wall/photos).
+  authorizeUrl.searchParams.set("prompt", "consent");
 
   const response = NextResponse.redirect(authorizeUrl);
   response.cookies.set(VK_OAUTH_PKCE_COOKIE, JSON.stringify({ codeVerifier, state }), {
